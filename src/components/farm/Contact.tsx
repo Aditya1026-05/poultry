@@ -6,19 +6,31 @@ import gallery1 from "@/assets/gallery-1.jpg";
 
 function Field({ id, label, type = "text", as = "input" }: { id: string; label: string; type?: string; as?: "input" | "textarea" }) {
   const [val, setVal] = useState("");
-  const Comp = as as "input";
+  const sharedClass =
+    "peer w-full bg-transparent border-b border-border focus:border-accent outline-none px-1 pt-6 pb-2 text-foreground transition-colors resize-none";
   return (
     <div className="relative">
-      <Comp
-        id={id}
-        name={id}
-        type={type}
-        rows={as === "textarea" ? 4 : undefined as never}
-        value={val}
-        onChange={(e) => setVal(e.target.value)}
-        placeholder=" "
-        className="peer w-full bg-transparent border-b border-border focus:border-accent outline-none px-1 pt-6 pb-2 text-foreground transition-colors resize-none"
-      />
+      {as === "textarea" ? (
+        <textarea
+          id={id}
+          name={id}
+          rows={4}
+          value={val}
+          onChange={(e) => setVal(e.target.value)}
+          placeholder=" "
+          className={sharedClass}
+        />
+      ) : (
+        <input
+          id={id}
+          name={id}
+          type={type}
+          value={val}
+          onChange={(e) => setVal(e.target.value)}
+          placeholder=" "
+          className={sharedClass}
+        />
+      )}
       <label
         htmlFor={id}
         className="absolute left-1 top-2 text-xs uppercase tracking-[0.2em] text-muted-foreground transition-all peer-placeholder-shown:top-6 peer-placeholder-shown:text-sm peer-placeholder-shown:tracking-normal peer-placeholder-shown:normal-case peer-focus:top-2 peer-focus:text-xs peer-focus:tracking-[0.2em] peer-focus:uppercase peer-focus:text-accent"
