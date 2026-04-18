@@ -1,5 +1,7 @@
 import { motion, useScroll, useTransform } from "framer-motion";
 import { Egg } from "lucide-react";
+import { Link } from "react-router-dom";
+import { useAuth } from "@/context/AuthContext";
 
 const links = [
   { label: "About", href: "#about" },
@@ -10,6 +12,7 @@ const links = [
 ];
 
 export default function Navbar() {
+  const { user } = useAuth();
   const { scrollY } = useScroll();
   const bg = useTransform(scrollY, [0, 120], ["hsla(145, 25%, 6%, 0)", "hsla(145, 25%, 6%, 0.7)"]);
   const blur = useTransform(scrollY, [0, 120], ["blur(0px)", "blur(18px)"]);
@@ -37,12 +40,39 @@ export default function Navbar() {
             </li>
           ))}
         </ul>
-        <a
-          href="#contact"
-          className="hidden md:inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium glass hover:bg-accent hover:text-accent-foreground transition-colors"
-        >
-          Get Started
-        </a>
+        <div className="hidden md:flex items-center gap-2">
+          {user ? (
+            <>
+              <Link
+                to={user.role === "admin" ? "/admin" : "/dashboard"}
+                className="px-4 py-2 rounded-full text-sm font-medium glass hover:bg-foreground/5 transition-colors"
+              >
+                {user.role === "admin" ? "Admin" : "Dashboard"}
+              </Link>
+              <Link
+                to="/order"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium bg-gradient-gold text-accent-foreground shadow-glow hover:opacity-90 transition-opacity"
+              >
+                Order Eggs
+              </Link>
+            </>
+          ) : (
+            <>
+              <Link
+                to="/auth"
+                className="px-4 py-2 rounded-full text-sm font-medium glass hover:bg-foreground/5 transition-colors"
+              >
+                Sign in
+              </Link>
+              <Link
+                to="/auth?mode=signup"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium bg-gradient-gold text-accent-foreground shadow-glow hover:opacity-90 transition-opacity"
+              >
+                Order Eggs
+              </Link>
+            </>
+          )}
+        </div>
       </nav>
     </motion.header>
   );
