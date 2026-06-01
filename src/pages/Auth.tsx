@@ -22,7 +22,7 @@ export default function Auth() {
         : params.get("mode") === "forgot"
           ? "forgot"
           : "login";
-
+  
   const [loading, setLoading] = useState(false);
   const [loginForm, setLoginForm] = useState({ email: "", password: "" });
   const [signupForm, setSignupForm] = useState({
@@ -130,11 +130,9 @@ export default function Auth() {
           </p>
 
           <Tabs defaultValue={initialTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-4 mb-6">
+            <TabsList className="grid w-full grid-cols-2 mb-6">
               <TabsTrigger value="login">Sign in</TabsTrigger>
               <TabsTrigger value="signup">Create account</TabsTrigger>
-              <TabsTrigger value="forgot">Forgot</TabsTrigger>
-              <TabsTrigger value="password">Password</TabsTrigger>
             </TabsList>
 
             <TabsContent value="login">
@@ -165,16 +163,12 @@ export default function Auth() {
                 </Button>
                 <p className="text-xs text-muted-foreground text-center pt-2">
                   <button
-                    type="button"
-                    className="hover:text-foreground transition-colors"
-                    onClick={() => {
-                      const email = loginForm.email.trim();
-                      if (email) setForgotEmail(email);
-                      toast.info("Open the Forgot tab to request a reset link.");
-                    }}
-                  >
-                    Forgot password?
-                  </button>
+  type="button"
+  className="hover:text-foreground transition-colors"
+  onClick={() => navigate("/forgot-password")}
+>
+  Forgot password?
+</button>
                 </p>
               </form>
             </TabsContent>
@@ -228,7 +222,7 @@ export default function Auth() {
               </form>
             </TabsContent>
 
-            <TabsContent value="forgot">
+            {/* <TabsContent value="forgot">
               <form onSubmit={handleForgotPassword} className="space-y-4">
                 <p className="text-sm text-muted-foreground">
                   Enter your account email and we will send a password reset link.
@@ -248,7 +242,7 @@ export default function Auth() {
                   Send reset link
                 </Button>
               </form>
-            </TabsContent>
+            </TabsContent> */}
 
             <TabsContent value="password">
               {user ? (

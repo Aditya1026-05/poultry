@@ -12,6 +12,7 @@ import ResetPassword from "./pages/ResetPassword.tsx";
 import Order from "./pages/Order.tsx";
 import Dashboard from "./pages/Dashboard.tsx";
 import Admin from "./pages/Admin.tsx";
+import ForgotPassword from "./pages/ForgotPassword";
 
 const queryClient = new QueryClient();
 
@@ -41,6 +42,10 @@ const App = () => (
                   <Dashboard />
                 </ProtectedRoute>
               }
+            />
+            <Route
+            path="/forgot-password"
+            element={<ForgotPassword />}
             />
             <Route
               path="/admin"
