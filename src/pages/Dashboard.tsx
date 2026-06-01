@@ -1,10 +1,13 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Plus, Package, CalendarDays, IndianRupee, CheckCircle2, Clock, XCircle, Truck } from "lucide-react";
+import { Plus, Package, CalendarDays, IndianRupee, CheckCircle2, Clock, XCircle, Truck, LockKeyhole, Loader2 } from "lucide-react";
 import AppHeader from "@/components/AppHeader";
 import { Button } from "@/components/ui/button";
-import { Order, getMyOrders } from "@/lib/mockApi";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Order, changePassword, getMyOrders } from "@/lib/mockApi";
+import { toast } from "sonner";
 
 const statusMeta: Record<Order["status"], { label: string; icon: React.ElementType; className: string }> = {
   pending_payment_review: { label: "Awaiting approval", icon: Clock, className: "bg-yellow-500/10 text-yellow-300 border-yellow-500/30" },
@@ -17,6 +20,12 @@ const statusMeta: Record<Order["status"], { label: string; icon: React.ElementTy
 export default function Dashboard() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
+  const [passwordForm, setPasswordForm] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+  const [savingPassword, setSavingPassword] = useState(false);
 
   useEffect(() => {
     getMyOrders().then((o) => {
@@ -24,6 +33,28 @@ export default function Dashboard() {
       setLoading(false);
     });
   }, []);
+
+  const handlePasswordChange = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+      toast.error("New passwords do not match");
+      return;
+    }
+
+    setSavingPassword(true);
+    try {
+      await changePassword({
+        currentPassword: passwordForm.currentPassword,
+        newPassword: passwordForm.newPassword,
+      });
+      setPasswordForm({ currentPassword: "", newPassword: "", confirmPassword: "" });
+      toast.success("Password updated");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to update password");
+    } finally {
+      setSavingPassword(false);
+    }
+  };
 
   return (
     <div className="min-h-screen">
@@ -127,6 +158,51 @@ export default function Dashboard() {
               })}
             </div>
           )}
+
+          <form onSubmit={handlePasswordChange} className="glass-strong rounded-2xl p-6 mt-8 max-w-2xl">
+            <div className="flex items-center gap-2 mb-5">
+              <LockKeyhole className="w-5 h-5 text-accent" />
+              <h2 className="font-display text-xl">Change password</h2>
+            </div>
+            <div className="grid sm:grid-cols-3 gap-4">
+              <div>
+                <Label htmlFor="current-password">Current password</Label>
+                <Input
+                  id="current-password"
+                  type="password"
+                  required
+                  value={passwordForm.currentPassword}
+                  onChange={(e) => setPasswordForm({ ...passwordForm, currentPassword: e.target.value })}
+                />
+              </div>
+              <div>
+                <Label htmlFor="new-password">New password</Label>
+                <Input
+                  id="new-password"
+                  type="password"
+                  minLength={6}
+                  required
+                  value={passwordForm.newPassword}
+                  onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
+                />
+              </div>
+              <div>
+                <Label htmlFor="confirm-password">Confirm password</Label>
+                <Input
+                  id="confirm-password"
+                  type="password"
+                  minLength={6}
+                  required
+                  value={passwordForm.confirmPassword}
+                  onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
+                />
+              </div>
+            </div>
+            <Button type="submit" disabled={savingPassword} className="mt-5">
+              {savingPassword && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+              Update password
+            </Button>
+          </form>
         </motion.div>
       </main>
     </div>

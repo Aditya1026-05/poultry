@@ -1,8 +1,8 @@
 /**
- * MOCK API LAYER
- * ==============
- * This file simulates a backend using localStorage.
- * Replace each function body with real fetch() calls to your MongoDB/Express backend.
+ * API LAYER
+ * =========
+ * Auth now talks to the FastAPI backend.
+ * Settings and orders are still mocked with localStorage until their backend routes are added.
  *
  * Suggested REST endpoints (you implement these on your server):
  *   POST   /api/auth/signup        { email, password, businessName, phone }    -> { user, token }
@@ -72,11 +72,11 @@ export interface Order {
 
 // ---------- storage keys ----------
 const KEYS = {
-  users: "aviora_users",
-  session: "aviora_session",
-  settings: "aviora_settings",
-  orders: "aviora_orders",
+  session: "Star_session",
+  token: "Star_token",
 };
+
+const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8000/api";
 
 // ---------- helpers ----------
 const read = <T>(k: string, fallback: T): T => {
@@ -88,39 +88,18 @@ const read = <T>(k: string, fallback: T): T => {
   }
 };
 const write = (k: string, v: unknown) => localStorage.setItem(k, JSON.stringify(v));
-const uid = () => Math.random().toString(36).slice(2) + Date.now().toString(36);
-const wait = (ms = 300) => new Promise((r) => setTimeout(r, ms));
 
-// ---------- bootstrap defaults ----------
-const defaultSettings: Settings = {
-  unitPrice: 180,
-  advancePercent: 10,
-  qrCodeUrl: "",
-  tiers: [
-    { minQty: 1, maxQty: 10, pricePerTray: 180 },
-    { minQty: 11, maxQty: 50, pricePerTray: 165 },
-    { minQty: 51, maxQty: null, pricePerTray: 150 },
-  ],
-};
+const getToken = () => localStorage.getItem(KEYS.token);
 
-const ensureBootstrap = () => {
-  if (!localStorage.getItem(KEYS.settings)) write(KEYS.settings, defaultSettings);
-  if (!localStorage.getItem(KEYS.users)) {
-    // seed default admin (REPLACE with real admin via your backend)
-    const admin: User & { password: string } = {
-      id: uid(),
-      email: "admin@aviora.com",
-      password: "admin123",
-      businessName: "Aviora Admin",
-      phone: "0000000000",
-      role: "admin",
-      createdAt: new Date().toISOString(),
-    };
-    write(KEYS.users, [admin]);
+const parseApiError = async (res: Response, fallback: string) => {
+  try {
+    const data = await res.json();
+    if (typeof data.detail === "string") return data.detail;
+  } catch {
+    // Ignore invalid JSON and use the fallback message.
   }
-  if (!localStorage.getItem(KEYS.orders)) write(KEYS.orders, []);
+  return fallback;
 };
-ensureBootstrap();
 
 // =============================================================
 // AUTH
@@ -131,61 +110,142 @@ export async function signup(input: {
   businessName: string;
   phone: string;
 }): Promise<User> {
-  await wait();
-  const users = read<(User & { password: string })[]>(KEYS.users, []);
-  if (users.some((u) => u.email.toLowerCase() === input.email.toLowerCase())) {
-    throw new Error("An account with this email already exists.");
+  const res = await fetch(`${API_URL}/auth/signup`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(input),
+  });
+
+  if (!res.ok) {
+    throw new Error(await parseApiError(res, "Signup failed"));
   }
-  const user: User & { password: string } = {
-    id: uid(),
-    email: input.email,
-    password: input.password,
-    businessName: input.businessName,
-    phone: input.phone,
-    role: "customer",
-    createdAt: new Date().toISOString(),
-  };
-  users.push(user);
-  write(KEYS.users, users);
-  const { password: _pw, ...safe } = user;
-  write(KEYS.session, safe);
-  return safe;
+
+  const data = (await res.json()) as { user: User; token: string };
+  localStorage.setItem(KEYS.token, data.token);
+  write(KEYS.session, data.user);
+  return data.user;
 }
 
 export async function login(email: string, password: string): Promise<User> {
-  await wait();
-  const users = read<(User & { password: string })[]>(KEYS.users, []);
-  const found = users.find(
-    (u) => u.email.toLowerCase() === email.toLowerCase() && u.password === password
-  );
-  if (!found) throw new Error("Invalid email or password.");
-  const { password: _pw, ...safe } = found;
-  write(KEYS.session, safe);
-  return safe;
+  const res = await fetch(`${API_URL}/auth/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, password }),
+  });
+
+  if (!res.ok) {
+    throw new Error(await parseApiError(res, "Invalid email or password."));
+  }
+
+  const data = (await res.json()) as { user: User; token: string };
+  localStorage.setItem(KEYS.token, data.token);
+  write(KEYS.session, data.user);
+  return data.user;
 }
 
 export function logout() {
   localStorage.removeItem(KEYS.session);
+  localStorage.removeItem(KEYS.token);
 }
 
-export function getCurrentUser(): User | null {
-  return read<User | null>(KEYS.session, null);
+export async function changePassword(input: {
+  currentPassword: string;
+  newPassword: string;
+}): Promise<void> {
+  const token = getToken();
+  if (!token) throw new Error("You must be logged in.");
+
+  const res = await fetch(`${API_URL}/auth/change-password`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(input),
+  });
+
+  if (!res.ok) {
+    throw new Error(await parseApiError(res, "Failed to update password"));
+  }
+}
+
+export async function forgotPassword(email: string): Promise<void> {
+  const res = await fetch(`${API_URL}/auth/forgot-password`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email }),
+  });
+
+  if (!res.ok) {
+    throw new Error(await parseApiError(res, "Failed to send reset link"));
+  }
+}
+
+export async function resetPassword(input: {
+  token: string;
+  newPassword: string;
+}): Promise<void> {
+  const res = await fetch(`${API_URL}/auth/reset-password`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(input),
+  });
+
+  if (!res.ok) {
+    throw new Error(await parseApiError(res, "Failed to reset password"));
+  }
+}
+
+export async function getCurrentUser(): Promise<User | null> {
+  const token = getToken();
+  if (!token) return null;
+
+  const res = await fetch(`${API_URL}/auth/me`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!res.ok) {
+    logout();
+    return null;
+  }
+
+  const user = (await res.json()) as User;
+  write(KEYS.session, user);
+  return user;
 }
 
 // =============================================================
 // SETTINGS
 // =============================================================
 export async function getSettings(): Promise<Settings> {
-  await wait(150);
-  return read<Settings>(KEYS.settings, defaultSettings);
+  const res = await fetch(`${API_URL}/settings`);
+  if (!res.ok) {
+    throw new Error(await parseApiError(res, "Failed to load settings"));
+  }
+  return res.json();
 }
 
 export async function updateSettings(patch: Partial<Settings>): Promise<Settings> {
-  await wait();
-  const current = read<Settings>(KEYS.settings, defaultSettings);
-  const next = { ...current, ...patch };
-  write(KEYS.settings, next);
-  return next;
+  const token = getToken();
+  if (!token) throw new Error("You must be logged in as admin.");
+
+  const current = await getSettings();
+  const res = await fetch(`${API_URL}/settings`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ ...current, ...patch }),
+  });
+
+  if (!res.ok) {
+    throw new Error(await parseApiError(res, "Failed to save settings"));
+  }
+
+  return res.json();
 }
 
 export function getPriceForQuantity(qty: number, settings: Settings): number {
@@ -203,51 +263,57 @@ export async function createOrder(input: {
   preferredDeliveryDate: string;
   paymentScreenshot: string;
 }): Promise<Order> {
-  await wait();
-  const user = getCurrentUser();
-  if (!user) throw new Error("You must be logged in to place an order.");
-  const settings = await getSettings();
-  const pricePerTray = getPriceForQuantity(input.quantity, settings);
-  const total = pricePerTray * input.quantity;
-  const advance = Math.round((total * settings.advancePercent) / 100);
-  const order: Order = {
-    id: uid(),
-    userId: user.id,
-    businessName: user.businessName,
-    email: user.email,
-    phone: user.phone,
-    quantity: input.quantity,
-    pricePerTray,
-    totalAmount: total,
-    advancePercent: settings.advancePercent,
-    advanceAmount: advance,
-    finalAmount: total - advance,
-    preferredDeliveryDate: input.preferredDeliveryDate,
-    confirmedDeliveryDate: null,
-    paymentScreenshot: input.paymentScreenshot,
-    status: "pending_payment_review",
-    advancePaid: false,
-    finalPaid: false,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  };
-  const orders = read<Order[]>(KEYS.orders, []);
-  orders.unshift(order);
-  write(KEYS.orders, orders);
-  return order;
+  const token = getToken();
+  if (!token) throw new Error("You must be logged in to place an order.");
+
+  const res = await fetch(`${API_URL}/orders`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(input),
+  });
+
+  if (!res.ok) {
+    throw new Error(await parseApiError(res, "Failed to place order"));
+  }
+
+  return res.json();
 }
 
 export async function getMyOrders(): Promise<Order[]> {
-  await wait(150);
-  const user = getCurrentUser();
-  if (!user) return [];
-  const orders = read<Order[]>(KEYS.orders, []);
-  return orders.filter((o) => o.userId === user.id);
+  const token = getToken();
+  if (!token) return [];
+
+  const res = await fetch(`${API_URL}/orders/mine`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!res.ok) {
+    throw new Error(await parseApiError(res, "Failed to load orders"));
+  }
+
+  return res.json();
 }
 
 export async function getAllOrders(): Promise<Order[]> {
-  await wait(150);
-  return read<Order[]>(KEYS.orders, []);
+  const token = getToken();
+  if (!token) throw new Error("You must be logged in as admin.");
+
+  const res = await fetch(`${API_URL}/orders`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!res.ok) {
+    throw new Error(await parseApiError(res, "Failed to load orders"));
+  }
+
+  return res.json();
 }
 
 export async function updateOrder(
@@ -264,16 +330,21 @@ export async function updateOrder(
     >
   >
 ): Promise<Order> {
-  await wait();
-  const orders = read<Order[]>(KEYS.orders, []);
-  const idx = orders.findIndex((o) => o.id === id);
-  if (idx === -1) throw new Error("Order not found");
-  const next = { ...orders[idx], ...patch, updatedAt: new Date().toISOString() };
-  // recalc final amount if advance changed
-  if (patch.advanceAmount !== undefined) {
-    next.finalAmount = next.totalAmount - patch.advanceAmount;
+  const token = getToken();
+  if (!token) throw new Error("You must be logged in as admin.");
+
+  const res = await fetch(`${API_URL}/orders/${id}`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(patch),
+  });
+
+  if (!res.ok) {
+    throw new Error(await parseApiError(res, "Failed to update order"));
   }
-  orders[idx] = next;
-  write(KEYS.orders, orders);
-  return next;
+
+  return res.json();
 }

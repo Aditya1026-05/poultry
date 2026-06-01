@@ -41,11 +41,10 @@ export default function Hero() {
           initial={{ opacity: 0, y: 30, filter: "blur(10px)" }}
           animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
           transition={{ duration: 1, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
-          className="mt-6 max-w-4xl text-5xl md:text-7xl lg:text-8xl font-display font-medium leading-[0.95] tracking-tight"
+          className="mt-6 max-w-4xl text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-display font-medium leading-[1.08] tracking-normal break-words"
         >
-          Smart Poultry Farming
-          <br />
-          <span className="text-gradient-gold italic">for the Future</span>
+          Clean and Healthy{" "}
+          <span className="text-gradient-gold">Poultry Farming</span>
         </motion.h1>
 
         <motion.p

@@ -6,8 +6,6 @@ import { useAuth } from "@/context/AuthContext";
 const links = [
   { label: "About", href: "#about" },
   { label: "Features", href: "#features" },
-  { label: "Sustainability", href: "#sustainability" },
-  { label: "Gallery", href: "#gallery" },
   { label: "Contact", href: "#contact" },
 ];
 
@@ -28,7 +26,7 @@ export default function Navbar() {
           <span className="relative inline-flex items-center justify-center w-9 h-9 rounded-full bg-gradient-gold shadow-glow">
             <Egg className="w-4 h-4 text-accent-foreground" />
           </span>
-          <span className="font-display text-xl tracking-tight">Aviora</span>
+          <span className="font-display text-xl tracking-tight">Star Poultry</span>
         </a>
         <ul className="hidden md:flex items-center gap-8 text-sm text-muted-foreground">
           {links.map((l) => (

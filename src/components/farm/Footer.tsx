@@ -8,7 +8,7 @@ export default function Footer() {
           <span className="w-7 h-7 rounded-full bg-gradient-gold flex items-center justify-center">
             <Egg className="w-3.5 h-3.5 text-accent-foreground" />
           </span>
-          <span className="font-display text-base text-foreground">Aviora</span>
+          <span className="font-display text-base text-foreground">Star Poultry</span>
           <span className="ml-3">© {new Date().getFullYear()} — Smart poultry, gentle planet.</span>
         </div>
         <div className="flex gap-6">

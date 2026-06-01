@@ -5,7 +5,7 @@ import { Cpu, Leaf, ShieldCheck } from "lucide-react";
 const EggModel = lazy(() => import("./EggModel"));
 
 const points = [
-  { icon: Cpu, title: "AI monitoring", desc: "Real-time health, behavior, and growth analytics for every bird." },
+  { icon: Cpu, title: "Constant monitoring", desc: "Constant health, behavior, and growth analytics for all birds." },
   { icon: Leaf, title: "Natural living", desc: "Free-range pastures, organic feed, and stress-free environments." },
   { icon: ShieldCheck, title: "Trusted quality", desc: "Traceable from coop to kitchen with verified certifications." },
 ];
@@ -16,13 +16,12 @@ export default function About() {
       <div className="container grid lg:grid-cols-2 gap-16 items-center">
         <div>
           <Reveal>
-            <p className="text-xs uppercase tracking-[0.3em] text-accent mb-5">About Aviora</p>
+            <p className="text-xs uppercase tracking-[0.3em] text-accent mb-5">About Star Poultry</p>
           </Reveal>
           <Reveal delay={0.1}>
-            <h2 className="text-4xl md:text-6xl font-display leading-[1.05]">
-              Where ancient craft
-              <br />
-              meets <span className="text-gradient-leaf italic">modern intelligence</span>.
+            <h2 className="text-3xl sm:text-4xl md:text-5xl xl:text-6xl font-display leading-[1.12] tracking-normal break-words">
+              Where ancient craft meets{" "}
+              <span className="text-gradient-leaf italic">modern intelligence</span>.
             </h2>
           </Reveal>
           <Reveal delay={0.2}>
