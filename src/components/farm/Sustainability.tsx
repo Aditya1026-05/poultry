@@ -28,10 +28,9 @@ export default function Sustainability() {
             <p className="text-xs uppercase tracking-[0.3em] text-accent mb-5">Sustainability</p>
           </Reveal>
           <Reveal delay={0.1}>
-            <h2 className="text-4xl md:text-6xl font-display leading-[1.05]">
-              A farm the earth
-              <br />
-              would <span className="text-gradient-leaf italic">design itself</span>.
+            <h2 className="text-3xl sm:text-4xl md:text-5xl xl:text-6xl font-display leading-[1.12] tracking-normal break-words">
+              A farm the earth would{" "}
+              <span className="text-gradient-leaf italic">design itself</span>.
             </h2>
           </Reveal>
           <Reveal delay={0.2}>

@@ -66,7 +66,7 @@ export default function Features() {
             <p className="text-xs uppercase tracking-[0.3em] text-accent mb-5">What we do</p>
           </Reveal>
           <Reveal delay={0.1}>
-            <h2 className="text-4xl md:text-6xl font-display leading-[1.05]">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl xl:text-6xl font-display leading-[1.12] tracking-normal break-words">
               Tools that quietly do the
               <span className="text-gradient-gold italic"> heavy lifting</span>.
             </h2>

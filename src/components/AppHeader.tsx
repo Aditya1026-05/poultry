@@ -19,7 +19,7 @@ export default function AppHeader() {
           <span className="relative inline-flex items-center justify-center w-9 h-9 rounded-full bg-gradient-gold shadow-glow">
             <Egg className="w-4 h-4 text-accent-foreground" />
           </span>
-          <span className="font-display text-xl tracking-tight">Aviora</span>
+          <span className="font-display text-xl tracking-tight">Star Poultry</span>
         </Link>
 
         <div className="flex items-center gap-2">

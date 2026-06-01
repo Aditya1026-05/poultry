@@ -89,7 +89,7 @@
   }
 
   h1, h2, h3, h4 {
-    @apply font-display tracking-tight;
+    @apply font-display tracking-normal;
   }
 
   ::selection {

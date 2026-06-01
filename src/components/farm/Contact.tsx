@@ -61,9 +61,8 @@ export default function Contact() {
             <p className="text-xs uppercase tracking-[0.3em] text-accent mb-5">Contact</p>
           </Reveal>
           <Reveal delay={0.1}>
-            <h2 className="text-4xl md:text-6xl font-display leading-[1.05]">
-              Let's grow
-              <br />
+            <h2 className="text-3xl sm:text-4xl md:text-5xl xl:text-6xl font-display leading-[1.12] tracking-normal break-words">
+              Let's grow{" "}
               <span className="text-gradient-gold italic">something better</span>.
             </h2>
           </Reveal>
@@ -74,9 +73,9 @@ export default function Contact() {
           </Reveal>
           <Reveal delay={0.3}>
             <div className="mt-10 space-y-3 text-sm text-muted-foreground">
-              <p><span className="text-foreground">hello@aviora.farm</span> — general inquiries</p>
-              <p><span className="text-foreground">+1 (555) 020-3344</span> — sales & partnerships</p>
-              <p>Aviora Farm, Verdant Valley, OR 97000</p>
+              <p><span className="text-foreground">adityatayal2610@gmail.com</span> — general inquiries</p>
+              <p><span className="text-foreground">+91 8847660891</span> — sales & partnerships</p>
+              <p>Near Indian oil Petrol Station,barnala Road</p>
             </div>
           </Reveal>
         </div>
