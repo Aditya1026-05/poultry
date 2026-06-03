@@ -190,12 +190,12 @@ function Scene() {
       <Grass />
 
       <Float speed={1.2} rotationIntensity={0.2} floatIntensity={0.1}>
-        <Chicken position={[0, 0, 0]} scale={1.1} speed={0.4} tint="#efe6d0" />
+        <Chicken position={[0, 0, -5]} scale={1.1} speed={0.4} tint="#efe6d0" />
       </Float>
-      <Chicken position={[2.5, 0, -1]} scale={0.9} speed={0.5} tint="#c89860" combColor="#a52a2a" />
-      <Chicken position={[-2.2, 0, 1.5]} scale={0.85} speed={0.55} tint="#3b2a20" combColor="#c0392b" />
-      <Chicken position={[1.5, 0, 2.5]} scale={0.7} speed={0.7} tint="#f5f1e6" />
-      <Chicken position={[-3, 0, -2]} scale={0.95} speed={0.45} tint="#8a6a48" />
+      <Chicken position={[5, 0, -2]} scale={0.9} speed={0.5} tint="#c89860" combColor="#a52a2a" />
+      <Chicken position={[-5, 0, -1]} scale={0.85} speed={0.55} tint="#3b2a20" combColor="#c0392b" />
+      <Chicken position={[3.5, 0, 3]} scale={0.7} speed={0.7} tint="#f5f1e6" />
+      <Chicken position={[-4, 0, -4]} scale={0.95} speed={0.45} tint="#8a6a48" />
 
       <Particles />
 
