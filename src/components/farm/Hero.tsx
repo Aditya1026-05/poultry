@@ -37,15 +37,19 @@ export default function Hero() {
           The future of poultry
         </motion.div>
 
-        <motion.h1
+        <motion.div
           initial={{ opacity: 0, y: 30, filter: "blur(10px)" }}
           animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
           transition={{ duration: 1, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
-          className="mt-6 max-w-4xl text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-display font-medium leading-[1.08] tracking-normal break-words"
+          className="mt-6 max-w-4xl inline-block rounded-2xl glass-strong px-6 py-5 md:px-8 md:py-6"
         >
-          Clean and Healthy{" "}
-          <span className="text-gradient-gold">Poultry Farming</span>
-        </motion.h1>
+          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-display font-medium leading-[1.08] tracking-normal whitespace-nowrap drop-shadow-[0_4px_20px_rgba(0,0,0,0.6)]">
+            Clean and Healthy
+          </h1>
+          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-display font-medium leading-[1.08] tracking-normal whitespace-nowrap drop-shadow-[0_4px_20px_rgba(0,0,0,0.6)]">
+            <span className="text-gradient-gold">Poultry Farming</span>
+          </h1>
+        </motion.div>
 
         <motion.p
           initial={{ opacity: 0, y: 20 }}
