@@ -141,14 +141,18 @@ async def revenue_overview():
 @router.get("/revenue/records")
 async def revenue_records(
     startDate: str | None = Query(None),
-    endDate: str | None = Query(None)
+    endDate: str | None = Query(None),
+    limit: int = Query(200, ge=1, le=1000)
 ):
     query = build_revenue_query(startDate, endDate)
 
-    cursor = orders_collection.find(query).sort(
+    cursor = orders_collection.find(
+        query,
+        {"_id": 0, "id": 1, "businessName": 1, "quantity": 1, "totalAmount": 1, "createdAt": 1},
+    ).sort(
         "createdAt",
         -1
-    )
+    ).limit(limit)
 
     records = []
 
@@ -166,78 +170,90 @@ async def revenue_records(
 @router.get("/revenue/kpis")
 async def revenue_kpis():
 
-    completed_orders = 0
-    total_revenue = 0
-    today_revenue = 0
-    month_revenue = 0
-
     today = datetime.now(timezone.utc).date().isoformat()
     current_month = datetime.now(timezone.utc).strftime("%Y-%m")
 
-    cursor = orders_collection.find(
-        {"status": "completed"}
-    )
+    pipeline = [
+        {"$match": {"status": "completed"}},
+        {
+            "$group": {
+                "_id": None,
+                "completedOrders": {"$sum": 1},
+                "totalRevenue": {"$sum": "$totalAmount"},
+                "todayRevenue": {
+                    "$sum": {
+                        "$cond": [
+                            {"$eq": [{"$substr": ["$createdAt", 0, 10]}, today]},
+                            "$totalAmount",
+                            0,
+                        ]
+                    }
+                },
+                "monthRevenue": {
+                    "$sum": {
+                        "$cond": [
+                            {"$eq": [{"$substr": ["$createdAt", 0, 7]}, current_month]},
+                            "$totalAmount",
+                            0,
+                        ]
+                    }
+                },
+            }
+        },
+        {
+            "$project": {
+                "_id": 0,
+                "todayRevenue": 1,
+                "monthRevenue": 1,
+                "totalRevenue": 1,
+                "completedOrders": 1,
+                "averageOrderValue": {
+                    "$cond": [
+                        {"$gt": ["$completedOrders", 0]},
+                        {"$round": [{"$divide": ["$totalRevenue", "$completedOrders"]}, 2]},
+                        0,
+                    ]
+                },
+            }
+        },
+    ]
 
-    async for order in cursor:
+    result = await orders_collection.aggregate(pipeline).to_list(length=1)
+    if not result:
+        return {
+            "todayRevenue": 0,
+            "monthRevenue": 0,
+            "totalRevenue": 0,
+            "completedOrders": 0,
+            "averageOrderValue": 0,
+        }
 
-        completed_orders += 1
-
-        amount = order["totalAmount"]
-
-        total_revenue += amount
-
-        if order["createdAt"].startswith(today):
-            today_revenue += amount
-
-        if order["createdAt"].startswith(current_month):
-            month_revenue += amount
-
-    average_order_value = (
-        total_revenue / completed_orders
-        if completed_orders > 0
-        else 0
-    )
-
-    return {
-    "todayRevenue": today_revenue,
-    "monthRevenue": month_revenue,
-    "totalRevenue": total_revenue,
-    "completedOrders": completed_orders,
-    "averageOrderValue": round(average_order_value, 2)
-}
+    return result[0]
 
 @router.get("/revenue/trends")
 async def revenue_trends():
 
-        monthly_data = {}
-
-        cursor = orders_collection.find(
-            {"status": "completed"}
-        )
-
-        async for order in cursor:
-
-            month = order["createdAt"][:7]
-
-            if month not in monthly_data:
-                monthly_data[month] = {
-                    "revenue": 0,
-                    "orders": 0
+        pipeline = [
+            {"$match": {"status": "completed"}},
+            {
+                "$group": {
+                    "_id": {"$substr": ["$createdAt", 0, 7]},
+                    "revenue": {"$sum": "$totalAmount"},
+                    "orders": {"$sum": 1},
                 }
+            },
+            {"$sort": {"_id": 1}},
+            {
+                "$project": {
+                    "_id": 0,
+                    "month": "$_id",
+                    "revenue": 1,
+                    "orders": 1,
+                }
+            },
+        ]
 
-            monthly_data[month]["revenue"] += order["totalAmount"]
-            monthly_data[month]["orders"] += 1
-
-        result = []
-
-        for month in sorted(monthly_data.keys()):
-            result.append({
-                "month": month,
-                "revenue": monthly_data[month]["revenue"],
-                "orders": monthly_data[month]["orders"]
-            })
-
-        return result
+        return await orders_collection.aggregate(pipeline).to_list(length=None)
 
 @router.get("/revenue/export")
 async def export_revenue_csv(

@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.bootstrap import ensure_admin_user
-from app.database import db
+from app.database import db, expenses_collection, orders_collection
 from app.routes.auth import router as auth_router
 from app.routes.expenses import router as expenses_router
 from app.routes.orders import router as orders_router
@@ -28,6 +28,10 @@ app.include_router(profit_router)
 @app.on_event("startup")
 async def startup():
     await ensure_admin_user()
+    await orders_collection.create_index([("status", 1), ("createdAt", -1)])
+    await orders_collection.create_index([("userId", 1), ("createdAt", -1)])
+    await expenses_collection.create_index([("expenseDate", -1)])
+    await expenses_collection.create_index([("category", 1), ("expenseDate", -1)])
 
 
 @app.get("/api/health")
