@@ -3,7 +3,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.bootstrap import ensure_admin_user
 from app.database import db
 from app.routes.auth import router as auth_router
+from app.routes.expenses import router as expenses_router
 from app.routes.orders import router as orders_router
+from app.routes.profit import router as profit_router
 from app.routes.settings import router as settings_router
 
 app = FastAPI(title="Star Poultry Farm API")
@@ -19,6 +21,8 @@ app.add_middleware(
 app.include_router(auth_router)
 app.include_router(settings_router)
 app.include_router(orders_router)
+app.include_router(expenses_router)
+app.include_router(profit_router)
 
 
 @app.on_event("startup")

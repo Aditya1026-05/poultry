@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
-import { Egg, LogOut, LayoutDashboard, ShoppingCart, Shield } from "lucide-react";
+import { BarChart3, Egg, LogOut, LayoutDashboard, ReceiptText, ShoppingCart, Shield, TrendingUp } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 
@@ -36,11 +36,28 @@ export default function AppHeader() {
                 </Link>
               </Button>
               {user.role === "admin" && (
-                <Button variant="ghost" size="sm" asChild>
-                  <Link to="/admin">
-                    <Shield className="w-4 h-4 mr-2" /> Admin
-                  </Link>
-                </Button>
+                <>
+                  <Button variant="ghost" size="sm" asChild>
+                    <Link to="/admin">
+                      <Shield className="w-4 h-4 mr-2" /> Admin
+                    </Link>
+                  </Button>
+                  <Button variant="ghost" size="sm" asChild>
+                    <Link to="/revenue">
+                      <BarChart3 className="w-4 h-4 mr-2" /> Revenue
+                    </Link>
+                  </Button>
+                  <Button variant="ghost" size="sm" asChild>
+                    <Link to="/expenses">
+                      <ReceiptText className="w-4 h-4 mr-2" /> Expenses
+                    </Link>
+                  </Button>
+                  <Button variant="ghost" size="sm" asChild>
+                    <Link to="/profit">
+                      <TrendingUp className="w-4 h-4 mr-2" /> Profit
+                    </Link>
+                  </Button>
+                </>
               )}
               <span className="hidden sm:inline text-sm text-muted-foreground px-2">{user.businessName}</span>
               <Button variant="outline" size="sm" onClick={handleLogout}>

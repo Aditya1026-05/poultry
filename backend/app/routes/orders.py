@@ -1,14 +1,29 @@
-from datetime import datetime, timezone
 import uuid
-
+from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException
-
+from fastapi import Query
 from app.database import orders_collection
 from app.routes.settings import get_or_create_settings
 from app.schemas.orders import CreateOrderRequest, OrderResponse, UpdateOrderRequest
 from app.security import get_current_user, require_admin
 
+from fastapi.responses import StreamingResponse
+import io
+import csv
+
 router = APIRouter(prefix="/api/orders", tags=["Orders"])
+
+
+def build_revenue_query(startDate: str | None = None, endDate: str | None = None) -> dict:
+    query = {"status": "completed"}
+    if startDate or endDate:
+        date_filter: dict = {}
+        if startDate:
+            date_filter["$gte"] = startDate + "T00:00:00+00:00"
+        if endDate:
+            date_filter["$lte"] = endDate + "T23:59:59.999999+00:00"
+        query["createdAt"] = date_filter
+    return query
 
 
 def now_iso() -> str:
@@ -95,6 +110,174 @@ async def get_all_orders(_admin=Depends(require_admin)):
     cursor = orders_collection.find({}).sort("createdAt", -1)
     return [clean_order(order) async for order in cursor]
 
+@router.get("/revenue/overview")
+async def revenue_overview():
+
+    completed_orders = await orders_collection.count_documents(
+        {"status": "completed"}
+    )
+
+    cursor = orders_collection.find(
+        {"status": "completed"}
+    )
+
+    total_revenue = 0
+
+    async for order in cursor:
+        total_revenue += order["totalAmount"]
+
+    average_order_value = (
+        total_revenue / completed_orders
+        if completed_orders > 0
+        else 0
+    )
+
+    return {
+        "completedOrders": completed_orders,
+        "totalRevenue": total_revenue,
+        "averageOrderValue": round(average_order_value, 2)
+    }
+
+@router.get("/revenue/records")
+async def revenue_records(
+    startDate: str | None = Query(None),
+    endDate: str | None = Query(None)
+):
+    query = build_revenue_query(startDate, endDate)
+
+    cursor = orders_collection.find(query).sort(
+        "createdAt",
+        -1
+    )
+
+    records = []
+
+    async for order in cursor:
+        records.append({
+            "id": order["id"],
+            "businessName": order["businessName"],
+            "quantity": order["quantity"],
+            "totalAmount": order["totalAmount"],
+            "createdAt": order["createdAt"]
+        })
+
+    return records
+
+@router.get("/revenue/kpis")
+async def revenue_kpis():
+
+    completed_orders = 0
+    total_revenue = 0
+    today_revenue = 0
+    month_revenue = 0
+
+    today = datetime.now(timezone.utc).date().isoformat()
+    current_month = datetime.now(timezone.utc).strftime("%Y-%m")
+
+    cursor = orders_collection.find(
+        {"status": "completed"}
+    )
+
+    async for order in cursor:
+
+        completed_orders += 1
+
+        amount = order["totalAmount"]
+
+        total_revenue += amount
+
+        if order["createdAt"].startswith(today):
+            today_revenue += amount
+
+        if order["createdAt"].startswith(current_month):
+            month_revenue += amount
+
+    average_order_value = (
+        total_revenue / completed_orders
+        if completed_orders > 0
+        else 0
+    )
+
+    return {
+    "todayRevenue": today_revenue,
+    "monthRevenue": month_revenue,
+    "totalRevenue": total_revenue,
+    "completedOrders": completed_orders,
+    "averageOrderValue": round(average_order_value, 2)
+}
+
+@router.get("/revenue/trends")
+async def revenue_trends():
+
+        monthly_data = {}
+
+        cursor = orders_collection.find(
+            {"status": "completed"}
+        )
+
+        async for order in cursor:
+
+            month = order["createdAt"][:7]
+
+            if month not in monthly_data:
+                monthly_data[month] = {
+                    "revenue": 0,
+                    "orders": 0
+                }
+
+            monthly_data[month]["revenue"] += order["totalAmount"]
+            monthly_data[month]["orders"] += 1
+
+        result = []
+
+        for month in sorted(monthly_data.keys()):
+            result.append({
+                "month": month,
+                "revenue": monthly_data[month]["revenue"],
+                "orders": monthly_data[month]["orders"]
+            })
+
+        return result
+
+@router.get("/revenue/export")
+async def export_revenue_csv(
+    startDate: str | None = Query(None),
+    endDate: str | None = Query(None)
+):
+
+    output = io.StringIO()
+
+    writer = csv.writer(output)
+
+    writer.writerow([
+        "Date",
+        "Business Name",
+        "Quantity",
+        "Revenue"
+    ])
+
+    cursor = orders_collection.find(
+        build_revenue_query(startDate, endDate)
+    ).sort("createdAt", -1)
+
+    async for order in cursor:
+        writer.writerow([
+            order["createdAt"][:10],
+            order["businessName"],
+            order["quantity"],
+            order["totalAmount"]
+        ])
+
+    output.seek(0)
+
+    return StreamingResponse(
+        iter([output.getvalue()]),
+        media_type="text/csv",
+        headers={
+            "Content-Disposition":
+            "attachment; filename=revenue.csv"
+        }
+    )
 
 @router.patch("/{order_id}", response_model=OrderResponse)
 async def update_order(order_id: str, payload: UpdateOrderRequest, _admin=Depends(require_admin)):

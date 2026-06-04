@@ -13,6 +13,9 @@ import Order from "./pages/Order.tsx";
 import Dashboard from "./pages/Dashboard.tsx";
 import Admin from "./pages/Admin.tsx";
 import ForgotPassword from "./pages/ForgotPassword";
+import Revenue from "./pages/Revenue.tsx";
+import Expenses from "./pages/Expenses.tsx";
+import Profit from "./pages/Profit.tsx";
 
 const queryClient = new QueryClient();
 
@@ -52,6 +55,30 @@ const App = () => (
               element={
                 <ProtectedRoute adminOnly>
                   <Admin />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/revenue"
+              element={
+                <ProtectedRoute adminOnly>
+                  <Revenue />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/expenses"
+              element={
+                <ProtectedRoute adminOnly>
+                  <Expenses />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/profit"
+              element={
+                <ProtectedRoute adminOnly>
+                  <Profit />
                 </ProtectedRoute>
               }
             />
