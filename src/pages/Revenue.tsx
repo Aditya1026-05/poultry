@@ -61,20 +61,23 @@ export default function Revenue() {
 
   const loadPage = useCallback(async (nextFilters: DateFilters) => {
     setLoading(true);
+    setRecordsLoading(true);
     try {
-      const [nextKpis, nextTrends] = await Promise.all([
+      const [nextKpis, nextTrends, nextRecords] = await Promise.all([
         getRevenueKpis(),
         getRevenueTrends(),
+        getRevenueRecords(nextFilters),
       ]);
       setKpis(nextKpis);
       setTrends(nextTrends);
-      await loadRecords(nextFilters);
+      setRecords(nextRecords);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to load revenue dashboard");
     } finally {
       setLoading(false);
+      setRecordsLoading(false);
     }
-  }, [loadRecords]);
+  }, []);
 
   useEffect(() => {
     void loadPage({ startDate: "", endDate: "" });
