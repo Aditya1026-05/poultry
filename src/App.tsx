@@ -16,6 +16,7 @@ import ForgotPassword from "./pages/ForgotPassword";
 import Revenue from "./pages/Revenue.tsx";
 import Expenses from "./pages/Expenses.tsx";
 import Profit from "./pages/Profit.tsx";
+import AIAssistant from "./pages/AIAssistant";
 
 const queryClient = new QueryClient();
 
@@ -79,6 +80,14 @@ const App = () => (
               element={
                 <ProtectedRoute adminOnly>
                   <Profit />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/ai"
+              element={
+                <ProtectedRoute adminOnly>
+                  <AIAssistant />
                 </ProtectedRoute>
               }
             />

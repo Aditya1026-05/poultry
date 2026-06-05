@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
-import { BarChart3, Egg, LogOut, LayoutDashboard, ReceiptText, ShoppingCart, Shield, TrendingUp } from "lucide-react";
+import { BarChart3, Egg, LogOut, LayoutDashboard, ReceiptText, ShoppingCart, Shield, TrendingUp, Bot } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 
@@ -55,6 +55,15 @@ export default function AppHeader() {
                   <Button variant="ghost" size="sm" asChild>
                     <Link to="/profit">
                       <TrendingUp className="w-4 h-4 mr-2" /> Profit
+                    </Link>
+                  </Button>
+                  <Button
+                      size="sm"
+                      asChild
+                      className="bg-gradient-gold text-accent-foreground hover:opacity-90 shadow-glow"
+                    >
+                    <Link to="/ai">
+                      <Bot className="w-4 h-4 mr-2" /> AI Assistant
                     </Link>
                   </Button>
                 </>
