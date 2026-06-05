@@ -1,6 +1,6 @@
 import AppHeader from "@/components/AppHeader";
-import { useState } from "react";
-import { Send, Bot, User } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { Send, Bot, User, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { sendMessage } from "@/lib/aiApi";
@@ -8,6 +8,7 @@ import { sendMessage } from "@/lib/aiApi";
 type Message = {
   role: "user" | "assistant";
   content: string;
+  loading?: boolean;
 };
 
 export default function AIAssistant() {
@@ -26,6 +27,16 @@ export default function AIAssistant() {
   "Top customers",
   "Pending orders",
 ];
+
+
+const messagesEndRef = useRef<HTMLDivElement | null>(null);
+
+useEffect(() => {
+  messagesEndRef.current?.scrollIntoView({
+    behavior: "smooth",
+  });
+}, [messages]);
+
 const handleSend = async () => {
   if (!input.trim()) return;
 
@@ -37,6 +48,11 @@ const handleSend = async () => {
       role: "user",
       content: userMessage,
     },
+    {
+      role: "assistant",
+      content: "",
+      loading: true,
+    },
   ]);
 
   setInput("");
@@ -44,21 +60,30 @@ const handleSend = async () => {
   try {
     const data = await sendMessage(userMessage);
 
-    setMessages((prev) => [
-      ...prev,
-      {
+    setMessages((prev) => {
+      const updated = [...prev];
+
+      updated[updated.length - 1] = {
         role: "assistant",
         content: data.response,
-      },
-    ]);
+      };
+
+      return updated;
+    });
+
   } catch (error) {
-    setMessages((prev) => [
-      ...prev,
-      {
+
+    setMessages((prev) => {
+      const updated = [...prev];
+
+      updated[updated.length - 1] = {
         role: "assistant",
         content: "Failed to contact backend AI.",
-      },
-    ]);
+      };
+
+      return updated;
+    });
+
   }
 };
   return (
@@ -133,13 +158,22 @@ const handleSend = async () => {
             </span>
           </div>
 
-          <p className="text-sm">
-            {message.content}
-          </p>
+          {message.loading ? (
+  <div className="flex items-center gap-2">
+    <Loader2 className="w-4 h-4 animate-spin" />
+    <span className="text-sm">
+      Thinking...
+    </span>
+  </div>
+) : (
+  <p className="text-sm whitespace-pre-wrap">
+    {message.content}
+  </p>
+)}
         </div>
       </div>
     ))}
-
+    <div ref={messagesEndRef} />
   </div>
 
   {/* Input Area */}
