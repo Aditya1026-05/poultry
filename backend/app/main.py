@@ -7,6 +7,7 @@ from app.routes.expenses import router as expenses_router
 from app.routes.orders import router as orders_router
 from app.routes.profit import router as profit_router
 from app.routes.settings import router as settings_router
+from app.routes.ai import router as ai_router
 
 app = FastAPI(title="Star Poultry Farm API")
 
@@ -23,7 +24,7 @@ app.include_router(settings_router)
 app.include_router(orders_router)
 app.include_router(expenses_router)
 app.include_router(profit_router)
-
+app.include_router(ai_router)
 
 @app.on_event("startup")
 async def startup():
