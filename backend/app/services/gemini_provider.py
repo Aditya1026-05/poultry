@@ -5,6 +5,7 @@ from app.services.ai_provider import AIProvider
 from app.services.ai_tools import (
     get_profit_summary,
     get_revenue_summary,
+    get_orders_summary,
 )
 from app.services.prompt_builder import build_business_prompt
 
@@ -86,6 +87,51 @@ class GeminiProvider(AIProvider):
             )
 
             return response.text
+
+        # Orders Tool
+        if intent == "orders":
+
+            orders_data = await get_orders_summary()
+            print(orders_data)
+
+            business_data = f"""
+            Total Orders: {orders_data['totalOrders']}
+            Pending Review: {orders_data['pendingReview']}
+            Confirmed Orders: {orders_data['confirmed']}
+            Delivered Orders: {orders_data['delivered']}
+            Completed Orders: {orders_data['completed']}
+            Rejected Orders: {orders_data['rejected']}
+            Total Trays Ordered: {orders_data['totalTrays']}
+            """
+
+            prompt = build_business_prompt(
+                business_data,
+                message,
+            )
+
+            response = self.client.models.generate_content(
+                model="gemini-2.5-flash",
+                contents=prompt,
+            )
+
+            return response.text
+
+        # # Orders Tool
+        # if intent == "orders":
+
+        #     orders_data = await get_orders_summary()
+
+        #     return f"""
+        # Order Summary
+
+        # Total Orders: {orders_data['totalOrders']}
+        # Pending Review: {orders_data['pendingReview']}
+        # Confirmed Orders: {orders_data['confirmed']}
+        # Delivered Orders: {orders_data['delivered']}
+        # Completed Orders: {orders_data['completed']}
+        # Rejected Orders: {orders_data['rejected']}
+        # Total Trays Ordered: {orders_data['totalTrays']}
+        # """
 
         # Normal Chat
         response = self.client.models.generate_content(

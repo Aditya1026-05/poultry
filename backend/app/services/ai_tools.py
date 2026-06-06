@@ -5,7 +5,7 @@ from app.routes.profit import (
 from datetime import datetime, timezone
 
 from app.database import orders_collection
-
+from app.database import orders_collection
 
 async def get_profit_summary():
     total_revenue, _ = await collect_revenue_by_month()
@@ -75,3 +75,45 @@ async def get_revenue_summary():
         }
 
     return result[0]
+
+
+async def get_orders_summary():
+
+    total_orders = await orders_collection.count_documents({})
+
+    pending_review = await orders_collection.count_documents(
+        {"status": "pending_payment_review"}
+    )
+
+    confirmed = await orders_collection.count_documents(
+        {"status": "confirmed"}
+    )
+
+    delivered = await orders_collection.count_documents(
+        {"status": "delivered"}
+    )
+
+    completed = await orders_collection.count_documents(
+        {"status": "completed"}
+    )
+
+    rejected = await orders_collection.count_documents(
+        {"status": "rejected"}
+    )
+
+    total_trays = 0
+
+    cursor = orders_collection.find({})
+
+    async for order in cursor:
+        total_trays += order["quantity"]
+
+    return {
+        "totalOrders": total_orders,
+        "pendingReview": pending_review,
+        "confirmed": confirmed,
+        "delivered": delivered,
+        "completed": completed,
+        "rejected": rejected,
+        "totalTrays": total_trays,
+    }
