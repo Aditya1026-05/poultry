@@ -20,6 +20,7 @@ from app.services.tool_router import determine_tools
 from app.services.gemini_helper import safe_generate
 from app.services.tool_executor import execute_tools
 from app.services.context_builder import build_context
+from app.services.business_agent import business_agent
 
 class GeminiProvider(AIProvider):
 
@@ -41,10 +42,11 @@ class GeminiProvider(AIProvider):
         #     print("AI Router Failed:", str(e))
 
         #     tools = []
+        print("Incoming Message:", repr(message))
 
         intent = detect_intent(message)
         
-        # print("Detected Intent:", intent)
+        print("Detected Intent:", intent)
 
         # try:
 
@@ -349,46 +351,7 @@ class GeminiProvider(AIProvider):
 
             try:
 
-                tools = await determine_tools(message)
-
-                print("Analysis Tools:", tools)
-
-                data = await execute_tools(tools)
-
-                context = build_context(data)
-
-                print("Analysis Data:", data)
-
-                prompt = f"""
-        You are Star Poultry's Senior Business Analyst.
-
-        Business Context:
-
-        {context}
-
-        User Question:
-
-        {message}
-
-        Analyze the business and answer the user's question.
-
-        Provide:
-
-        # Findings
-
-        # Insights
-
-        # Recommendations
-
-        Rules:
-        - Use only the provided business data.
-        - Do not invent numbers.
-        - Explain your reasoning.
-        - Be concise and practical.
-        - Focus on improving the business.
-        """
-
-                return safe_generate(prompt)
+                return await business_agent(message)
 
             except Exception as e:
 
