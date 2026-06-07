@@ -19,13 +19,14 @@ from app.services.prompt_builder import build_business_prompt
 from app.services.tool_router import determine_tools
 from app.services.gemini_helper import safe_generate
 from app.services.tool_executor import execute_tools
+from app.services.context_builder import build_context
 
 class GeminiProvider(AIProvider):
 
-    def __init__(self):
-        self.client = genai.Client(
-            api_key=settings.gemini_api_key
-        )
+    # def __init__(self):
+    #     self.client = genai.Client(
+    #         api_key=settings.gemini_api_key
+    #     )
 
     async def chat(self, message: str) -> str:
 
@@ -354,20 +355,22 @@ class GeminiProvider(AIProvider):
 
                 data = await execute_tools(tools)
 
+                context = build_context(data)
+
                 print("Analysis Data:", data)
 
                 prompt = f"""
-        You are Star Poultry's Business Analyst.
+        You are Star Poultry's Senior Business Analyst.
 
-        Business Data:
+        Business Context:
 
-        {data}
+        {context}
 
         User Question:
 
         {message}
 
-        Analyze the business data and answer the user's question.
+        Analyze the business and answer the user's question.
 
         Provide:
 
@@ -380,6 +383,7 @@ class GeminiProvider(AIProvider):
         Rules:
         - Use only the provided business data.
         - Do not invent numbers.
+        - Explain your reasoning.
         - Be concise and practical.
         - Focus on improving the business.
         """

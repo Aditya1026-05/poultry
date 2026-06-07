@@ -3,9 +3,28 @@ from google import genai
 from app.config import settings
 
 
-client = genai.Client(
-    api_key=settings.gemini_api_key
-)
+clients = []
+
+if settings.gemini_api_key_1:
+    clients.append(
+        genai.Client(
+            api_key=settings.gemini_api_key_1
+        )
+    )
+
+if settings.gemini_api_key_2:
+    clients.append(
+        genai.Client(
+            api_key=settings.gemini_api_key_2
+        )
+    )
+
+if settings.gemini_api_key_3:
+    clients.append(
+        genai.Client(
+            api_key=settings.gemini_api_key_3
+        )
+    )
 
 
 async def determine_tools(message: str):
@@ -78,13 +97,34 @@ User Message:
 {message}
 """
 
-    response = client.models.generate_content(
-        model="gemini-2.5-flash",
-        contents=prompt,
-    )
+    last_error = None
 
-    return [
-    tool.strip().lower()
-    for tool in response.text.split(",")
-    if tool.strip()
-    ]
+    for index, client in enumerate(clients):
+
+        try:
+
+            print(
+                f"Router trying Gemini Key #{index + 1}"
+            )
+
+            response = client.models.generate_content(
+                model="gemini-2.5-flash",
+                contents=prompt,
+            )
+
+            return [
+                tool.strip().lower()
+                for tool in response.text.split(",")
+                if tool.strip()
+            ]
+
+        except Exception as e:
+
+            print(
+                f"Router Gemini Key #{index + 1} Failed:",
+                str(e)
+            )
+
+            last_error = e
+
+    raise last_error

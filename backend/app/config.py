@@ -20,7 +20,9 @@ class Settings(BaseSettings):
     smtp_from_name: str = "Star Poultry Farm"
     password_reset_expire_minutes: int = 30
     ai_provider: str = "gemini"
-    gemini_api_key: str = ""
+    gemini_api_key_1: str = ""
+    gemini_api_key_2: str = ""
+    gemini_api_key_3: str = ""
     openai_api_key: str = ""
 
     class Config:
