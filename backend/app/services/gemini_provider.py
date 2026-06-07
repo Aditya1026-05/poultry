@@ -42,6 +42,8 @@ class GeminiProvider(AIProvider):
         #     tools = []
 
         intent = detect_intent(message)
+        
+        # print("Detected Intent:", intent)
 
         # try:
 
@@ -338,6 +340,63 @@ class GeminiProvider(AIProvider):
         """
 
             return safe_generate(prompt)
+
+        # =====================
+        # BUSINESS ANALYSIS
+        # =====================
+        if intent == "analysis":
+
+            try:
+
+                tools = await determine_tools(message)
+
+                print("Analysis Tools:", tools)
+
+                data = await execute_tools(tools)
+
+                print("Analysis Data:", data)
+
+                prompt = f"""
+        You are Star Poultry's Business Analyst.
+
+        Business Data:
+
+        {data}
+
+        User Question:
+
+        {message}
+
+        Analyze the business data and answer the user's question.
+
+        Provide:
+
+        # Findings
+
+        # Insights
+
+        # Recommendations
+
+        Rules:
+        - Use only the provided business data.
+        - Do not invent numbers.
+        - Be concise and practical.
+        - Focus on improving the business.
+        """
+
+                return safe_generate(prompt)
+
+            except Exception as e:
+
+                print("Analysis Error:", str(e))
+
+                return """
+        # Analysis Unavailable
+
+        Business analysis is temporarily unavailable.
+
+        Please try again in a few minutes.
+        """
 
 
         # Normal Chat
