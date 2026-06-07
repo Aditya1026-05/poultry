@@ -7,8 +7,9 @@ Intent = Literal[
     "expenses",
     "customers",
     "overview",
-    "general",
     "report",
+    "analysis",
+    "general",
 ]
 
 def wants_expense_categories(message: str) -> bool:
@@ -35,6 +36,31 @@ def wants_expense_categories(message: str) -> bool:
 def detect_intent(message: str) -> Intent:
 
     msg = message.lower()
+
+    analysis_keywords = [
+    "why",
+    "how",
+    "healthy",
+    "health",
+    "improve",
+    "improvement",
+    "recommend",
+    "recommendation",
+    "suggest",
+    "suggestion",
+    "focus",
+    "problem",
+    "problems",
+    "issue",
+    "issues",
+    "hurting",
+    "weakness",
+    "weaknesses",
+    "strength",
+    "strengths",
+    "opportunity",
+    "opportunities",
+]
 
     profit_keywords = [
         "profit",
@@ -90,6 +116,9 @@ def detect_intent(message: str) -> Intent:
     "complete report",
 ]
 
+    if any(word in msg for word in analysis_keywords):
+        return "analysis"
+
     if any(word in msg for word in profit_keywords):
         return "profit"
 
@@ -107,5 +136,7 @@ def detect_intent(message: str) -> Intent:
 
     if any(word in msg for word in overview_keywords):
         return "overview"
+
+    
 
     return "general"
