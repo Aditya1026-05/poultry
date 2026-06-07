@@ -13,6 +13,7 @@ from app.services.ai_tools import (
     get_expenses_summary,
     get_expense_category_summary,
     get_customer_summary,
+    get_complete_business_report,
 )
 from app.services.prompt_builder import build_business_prompt
 from app.services.tool_router import determine_tools
@@ -243,6 +244,86 @@ Completed Orders: {revenue_data['completedOrders']}
             # )
 
             # return response.text
+        # =====================
+        # COMPLETE BUSINESS REPORT
+        # =====================
+        if intent == "report":
+
+            report_data = await get_complete_business_report()
+
+            business_data = f"""
+        Revenue Data:
+        {report_data['revenue']}
+
+        Profit Data:
+        {report_data['profit']}
+
+        Expense Data:
+        {report_data['expenses']}
+
+        Orders Data:
+        {report_data['orders']}
+
+        Customer Data:
+        {report_data['customers']}
+        """
+
+            prompt = f"""
+        You are Star Poultry's AI Business Analyst.
+
+        Business Data:
+
+        {business_data}
+
+        User Question:
+
+        {message}
+
+        Generate a professional business report.
+
+        Use Markdown.
+
+        Structure:
+
+        # Business Report
+
+        ## Financial Summary
+
+        Include:
+        - Revenue
+        - Expenses
+        - Profit
+
+        ## Operations Summary
+
+        Include:
+        - Orders
+        - Completed Orders
+        - Total Trays
+
+        ## Customer Summary
+
+        Include:
+        - Total Customers
+        - Top Customer
+        - Customer Performance
+
+        ## Key Insights
+
+        Provide 3 insights.
+
+        ## Recommendations
+
+        Provide 3 recommendations.
+
+        Rules:
+        - Do not invent numbers.
+        - Only use provided data.
+        - Be concise and professional.
+        """
+
+            return safe_generate(prompt)
+
 
         # Normal Chat
         
