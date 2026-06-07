@@ -211,3 +211,18 @@ async def get_customer_summary():
         "totalCustomers": len(customers),
         "customers": customers,
     }
+
+async def get_complete_business_report():
+    revenue = await get_revenue_summary()
+    profit = await get_profit_summary()
+    orders = await get_orders_summary()
+    expenses = await get_expenses_summary()
+    customers = await get_customer_summary()
+
+    return {
+        "revenue": revenue,
+        "profit": profit,
+        "orders": orders,
+        "expenses": expenses,
+        "customers": customers,
+    }

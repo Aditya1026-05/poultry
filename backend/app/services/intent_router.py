@@ -8,6 +8,7 @@ Intent = Literal[
     "customers",
     "overview",
     "general",
+    "report",
 ]
 
 def wants_expense_categories(message: str) -> bool:
@@ -78,6 +79,15 @@ def detect_intent(message: str) -> Intent:
     "business",
     "dashboard",
     "performance",
+]
+
+    report_keywords = [
+    "report",
+    "analysis",
+    "analyze",
+    "overview report",
+    "business report",
+    "complete report",
 ]
 
     if any(word in msg for word in profit_keywords):
