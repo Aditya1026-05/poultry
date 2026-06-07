@@ -11,7 +11,7 @@ client = genai.Client(
 async def determine_tools(message: str):
 
     prompt = f"""
-You are an AI routing system.
+You are an AI routing system for a poultry business assistant.
 
 Available tools:
 
@@ -21,8 +21,11 @@ Available tools:
 - expenses
 - customers
 - overview
+- report
 
 Analyze the user's message.
+
+Choose ALL tools required to answer the question.
 
 Return ONLY a comma separated list.
 
@@ -41,16 +44,34 @@ Output:
 revenue,profit
 
 Message:
-How is my business doing?
+Why is my profit low?
+
+Output:
+profit,revenue,expenses
+
+Message:
+Which part of my business needs attention?
 
 Output:
 overview
+
+Message:
+Analyze my business
+
+Output:
+report
 
 Message:
 Who is my biggest customer?
 
 Output:
 customers
+
+Message:
+Give me a complete business report
+
+Output:
+report
 
 User Message:
 
@@ -63,6 +84,7 @@ User Message:
     )
 
     return [
-        tool.strip().lower()
-        for tool in response.text.split(",")
+    tool.strip().lower()
+    for tool in response.text.split(",")
+    if tool.strip()
     ]

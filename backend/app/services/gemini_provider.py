@@ -18,6 +18,7 @@ from app.services.ai_tools import (
 from app.services.prompt_builder import build_business_prompt
 from app.services.tool_router import determine_tools
 from app.services.gemini_helper import safe_generate
+from app.services.tool_executor import execute_tools
 
 class GeminiProvider(AIProvider):
 
@@ -41,6 +42,20 @@ class GeminiProvider(AIProvider):
         #     tools = []
 
         intent = detect_intent(message)
+
+        # try:
+
+        #     tools = await determine_tools(message)
+
+        #     print("AI Router Result:", tools)
+
+        #     data = await execute_tools(tools)
+
+        #     print(data)
+
+        # except Exception as e:
+
+        #     print("AI Router Failed:", str(e))
 
         # =====================
         # PROFIT TOOL
@@ -78,11 +93,11 @@ class GeminiProvider(AIProvider):
             revenue_data = await get_revenue_summary()
 
             business_data = f"""
-Today's Revenue: ₹{revenue_data['todayRevenue']}
-Monthly Revenue: ₹{revenue_data['monthRevenue']}
-Total Revenue: ₹{revenue_data['totalRevenue']}
-Completed Orders: {revenue_data['completedOrders']}
-"""
+            Today's Revenue: ₹{revenue_data['todayRevenue']}
+            Monthly Revenue: ₹{revenue_data['monthRevenue']}
+            Total Revenue: ₹{revenue_data['totalRevenue']}
+            Completed Orders: {revenue_data['completedOrders']}
+            """
 
             prompt = build_business_prompt(
                 business_data,
