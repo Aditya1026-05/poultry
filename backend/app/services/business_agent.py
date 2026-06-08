@@ -12,6 +12,10 @@ async def business_agent(message: str):
 
     context = build_context(data)
 
+    print("TOOLS:", tools)
+    print("DATA:", data)
+    print("CONTEXT:", context)
+
     prompt = f"""
 You are Star Poultry's Senior Business Analyst.
 

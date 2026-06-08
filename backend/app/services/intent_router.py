@@ -60,6 +60,16 @@ def detect_intent(message: str) -> Intent:
     "strengths",
     "opportunity",
     "opportunities",
+    "attention",
+    "needs attention",
+    "area needs attention",
+    "healthy",
+    "health",
+    "business health",
+    "focus on",
+    "focus",
+    "improve business",
+    "improve profit",
 ]
 
     profit_keywords = [
@@ -140,3 +150,40 @@ def detect_intent(message: str) -> Intent:
     
 
     return "general"
+
+def is_business_question(message: str) -> bool:
+
+    msg = message.lower()
+
+    business_keywords = [
+        "revenue",
+        "sales",
+        "profit",
+        "loss",
+        "margin",
+        "expense",
+        "expenses",
+        "cost",
+        "orders",
+        "order",
+        "customer",
+        "customers",
+        "buyer",
+        "client",
+        "business",
+        "dashboard",
+        "performance",
+        "report",
+        "analysis",
+        "profitability",
+        "focus",
+        "attention",
+        "improve",
+        "growth",
+        "recommendation",
+        "recommend",
+        "healthy",
+        "health",
+    ]
+
+    return any(word in msg for word in business_keywords)
