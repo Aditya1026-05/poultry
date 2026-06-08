@@ -5,6 +5,7 @@ from app.services.ai_provider import AIProvider
 from app.services.intent_router import (
     detect_intent,
     wants_expense_categories,
+    is_business_question,
 )
 from app.services.ai_tools import (
     get_profit_summary,
@@ -47,6 +48,7 @@ class GeminiProvider(AIProvider):
         intent = detect_intent(message)
         
         print("Detected Intent:", intent)
+        print("Business Question:", is_business_question(message))
 
         # try:
 

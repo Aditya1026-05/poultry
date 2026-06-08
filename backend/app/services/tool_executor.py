@@ -29,4 +29,13 @@ async def execute_tools(tools: list[str]):
     if "report" in tools:
         results["report"] = await get_complete_business_report()
 
+    if "overview" in tools:
+
+        results["overview"] = {
+            "revenue": await get_revenue_summary(),
+            "profit": await get_profit_summary(),
+            "orders": await get_orders_summary(),
+            "customers": await get_customer_summary(),
+        }
+
     return results
