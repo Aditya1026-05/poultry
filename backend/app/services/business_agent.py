@@ -1,4 +1,4 @@
-from app.services.tool_router import determine_tools
+from app.services.tool_router import determine_tools, fallback_tools
 from app.services.tool_executor import execute_tools
 from app.services.context_builder import build_context
 from app.services.gemini_helper import safe_generate
@@ -10,23 +10,24 @@ from app.services.chat_memory import (
 async def business_agent(message: str):
     history = get_history()
 
-    print("HISTORY:")
-    print(history)
+    # print("HISTORY:")
+    # print(history)
     try:
         tools = await determine_tools(message)
 
     except Exception:
+        print("Router Failed -> Using Fallback Router")
 
-        print("Router Failed -> Using Overview")
+        tools = fallback_tools(message)
 
-    tools = ["overview"]
+    
     data = await execute_tools(tools)
 
     context = build_context(data)
 
-    print("TOOLS:", tools)
-    print("DATA:", data)
-    print("CONTEXT:", context)
+    # print("TOOLS:", tools)
+    # print("DATA:", data)
+    # print("CONTEXT:", context)
 
     prompt = f"""
 You are Star Poultry's Senior Business Analyst.
@@ -54,7 +55,8 @@ Rules:
     response = safe_generate(prompt)
 
     add_message("user", message)
-    add_message("assistant", response)
+    if "AI Service Temporarily Unavailable" not in response:
+        add_message("assistant", response)
 
     return response
 
