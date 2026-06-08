@@ -128,3 +128,24 @@ User Message:
             last_error = e
 
     raise last_error
+
+def fallback_tools(message: str):
+
+    msg = message.lower()
+
+    if "customer" in msg:
+        return ["customers"]
+
+    if "profit" in msg:
+        return ["profit"]
+
+    if "revenue" in msg:
+        return ["revenue"]
+
+    if "order" in msg:
+        return ["orders"]
+
+    if "expense" in msg:
+        return ["expenses"]
+
+    return ["overview"]
