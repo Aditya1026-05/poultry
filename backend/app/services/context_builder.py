@@ -4,12 +4,18 @@ def build_context(data: dict) -> str:
 
     for tool_name, tool_data in data.items():
 
-        sections.append(
-            f"""
-{tool_name.upper()} DATA
+        section = f"\n{tool_name.upper()} DATA\n\n"
 
-{tool_data}
-"""
-        )
+        if isinstance(tool_data, dict):
+
+            for key, value in tool_data.items():
+
+                section += f"{key}: {value}\n"
+
+        else:
+
+            section += str(tool_data)
+
+        sections.append(section)
 
     return "\n".join(sections)

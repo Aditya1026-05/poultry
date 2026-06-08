@@ -2,12 +2,24 @@ from app.services.tool_router import determine_tools
 from app.services.tool_executor import execute_tools
 from app.services.context_builder import build_context
 from app.services.gemini_helper import safe_generate
-
+from app.services.chat_memory import (
+    add_message,
+    get_history,
+)
 
 async def business_agent(message: str):
+    history = get_history()
 
-    tools = await determine_tools(message)
+    print("HISTORY:")
+    print(history)
+    try:
+        tools = await determine_tools(message)
 
+    except Exception:
+
+        print("Router Failed -> Using Overview")
+
+    tools = ["overview"]
     data = await execute_tools(tools)
 
     context = build_context(data)
@@ -19,24 +31,32 @@ async def business_agent(message: str):
     prompt = f"""
 You are Star Poultry's Senior Business Analyst.
 
+Conversation History:
+
+{history}
+
 Business Context:
 
 {context}
 
-User Question:
+Current User Question:
 
 {message}
 
-Answer the user's question using the business data.
+Answer using the conversation history when relevant.
 
 Rules:
-- Use only the provided data.
+- Use only provided business data.
 - Do not invent numbers.
-- Provide insights when relevant.
-- Provide recommendations when useful.
+- Give practical recommendations.
 """
 
-    return safe_generate(prompt)
+    response = safe_generate(prompt)
+
+    add_message("user", message)
+    add_message("assistant", response)
+
+    return response
 
 
 print("Business Agent Loaded")

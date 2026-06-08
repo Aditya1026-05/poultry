@@ -50,6 +50,10 @@ class GeminiProvider(AIProvider):
         print("Detected Intent:", intent)
         print("Business Question:", is_business_question(message))
 
+        if is_business_question(message):
+
+            return await business_agent(message)
+
         # try:
 
         #     tools = await determine_tools(message)
