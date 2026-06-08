@@ -12,13 +12,15 @@ async def business_agent(message: str):
 
     # print("HISTORY:")
     # print(history)
-    try:
-        tools = await determine_tools(message)
+    # try:
+    #     tools = await determine_tools(message)
 
-    except Exception:
-        print("Router Failed -> Using Fallback Router")
+    # except Exception:
+    #     print("Router Failed -> Using Fallback Router")
 
-        tools = fallback_tools(message)
+    #     tools = fallback_tools(message)
+
+    tools = fallback_tools(message)
 
     
     data = await execute_tools(tools)
