@@ -153,7 +153,19 @@ def detect_intent(message: str) -> Intent:
 
 def is_business_question(message: str) -> bool:
 
-    msg = message.lower()
+    msg = message.lower().strip()
+
+    follow_ups = [
+        "why",
+        "why?",
+        "how",
+        "how?",
+        "explain",
+        "tell me more",
+    ]
+
+    if msg in follow_ups:
+        return True
 
     business_keywords = [
         "revenue",
