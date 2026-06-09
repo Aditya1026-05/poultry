@@ -105,6 +105,8 @@ User Question:
     context = build_context(data)
     print("DATA:")
     print(data)
+    print("FINAL CONTEXT:")
+    print(context)
 
     prompt = f"""
 You are Star Poultry's Senior Business Analyst.
