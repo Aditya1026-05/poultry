@@ -12,7 +12,7 @@ from app.services.ai_tools import (
     get_revenue_summary,
     get_orders_summary,
     get_expenses_summary,
-    get_expense_category_summary,
+    get_expense_categories,
     get_customer_summary,
     get_complete_business_report,
 )
@@ -165,7 +165,7 @@ class GeminiProvider(AIProvider):
 
             if wants_expense_categories(message):
 
-                category_data = await get_expense_category_summary()
+                category_data = await get_expense_categories()
 
                 business_data = f"""
         Largest Expense Category: {category_data['largestCategory']}
