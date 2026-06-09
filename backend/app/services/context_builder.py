@@ -3,6 +3,8 @@ def build_context(data: dict) -> str:
     sections = []
 
     for tool_name, tool_data in data.items():
+        if tool_name.startswith("get_"):
+            tool_name = tool_name.replace("get_", "")
 
         if tool_name == "revenue":
 
