@@ -6,7 +6,7 @@ from app.services.gemini_function_agent import (
 
 response = asyncio.run(
     gemini_function_agent(
-        "Who is my biggest customer?"
+        "Show revenue and profit"
     )
 )
 
