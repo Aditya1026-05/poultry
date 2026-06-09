@@ -16,8 +16,39 @@ from app.services.function_executor import (
 from app.services.fallback_responses import (
     build_fallback_response,
 )
+
+from app.services.gemini_function_agent import (
+    gemini_function_agent,
+)
+
+
 async def business_agent(message: str):
     history = get_history()
+
+    try:
+
+        response = await gemini_function_agent(
+            message
+        )
+
+        add_message(
+            "user",
+            message
+        )
+
+        add_message(
+            "assistant",
+            response
+        )
+
+        return response
+
+    except Exception as e:
+
+        print(
+            "Gemini Function Agent Failed:",
+            str(e)
+        )
 
     # print("HISTORY:")
     # print(history)
