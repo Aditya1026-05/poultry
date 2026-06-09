@@ -13,6 +13,9 @@ from app.services.function_router import (
 from app.services.function_executor import (
     execute_function,
 )
+from app.services.fallback_responses import (
+    build_fallback_response,
+)
 async def business_agent(message: str):
     history = get_history()
 
@@ -35,6 +38,28 @@ async def business_agent(message: str):
     function_name = get_function_name(message)
 
     print("Function Chosen:", function_name)
+
+    if function_name is None:
+
+        tools = fallback_tools(message)
+
+        data = await execute_tools(tools)
+
+        first_tool = tools[0]
+
+        tool_mapping = {
+            "revenue": "get_revenue",
+            "profit": "get_profit",
+            "orders": "get_orders",
+            "expenses": "get_expenses",
+            "customers": "get_customers",
+            "overview": "get_overview",
+        }
+
+        return build_fallback_response(
+            tool_mapping[first_tool],
+            data[first_tool],
+        )
 
     result = await execute_function(
         function_name
@@ -74,6 +99,13 @@ Rules:
 """
 
     response = safe_generate(prompt)
+
+    if "AI Service Temporarily Unavailable" in response:
+
+        return build_fallback_response(
+            function_name,
+            result,
+        )
 
     add_message("user", message)
     if "AI Service Temporarily Unavailable" not in response:

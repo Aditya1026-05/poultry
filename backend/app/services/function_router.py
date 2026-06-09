@@ -68,4 +68,6 @@ def get_function_name(message: str):
 
             last_error = e
 
-    raise last_error
+    print("Function Router Failed")
+
+    return None
