@@ -87,6 +87,22 @@ Customers:
 - Top Customer: {customers.get("topCustomer")}
 """)
 
+        elif normalized_name == "expense_categories":
+
+            sections.append(f"""
+        EXPENSE CATEGORY DATA
+
+        Largest Category:
+        {tool_data.get("largestCategory")}
+
+        Largest Amount:
+        ₹{tool_data.get("largestAmount")}
+
+        Categories:
+
+        {tool_data.get("categories")}
+        """)
+
         else:
 
             sections.append(str(tool_data))

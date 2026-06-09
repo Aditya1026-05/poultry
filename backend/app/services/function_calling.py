@@ -24,10 +24,22 @@ and operational analysis."""
     ),
     types.FunctionDeclaration(
         name="get_expenses",
-        description="""Get expense statistics including total expenses,
-expense categories, expense breakdown,
-largest expense category, operating costs,
-spending patterns and expense analysis."""
+        description="""
+Get overall expense statistics including
+total expenses,
+expense record count,
+total business spending,
+and expense summaries.
+"""
+    ),
+    types.FunctionDeclaration(
+        name="get_expense_categories",
+        description="""
+    Get expense category breakdown,
+    largest expense category,
+    category spending totals,
+    expense analysis and spending patterns.
+    """
     ),
     types.FunctionDeclaration(
         name="get_customers",
@@ -47,4 +59,5 @@ orders, business performance, key insights,
 recommendations and areas needing attention.
 """
     ),
+    
 ]

@@ -9,6 +9,8 @@ from app.database import (
     expenses_collection,
 )
 
+from collections import defaultdict
+
 async def get_profit_summary():
     total_revenue, _ = await collect_revenue_by_month()
     total_expenses, _ = await collect_expenses_by_month()
@@ -136,7 +138,7 @@ async def get_expenses_summary():
         "expenseRecords": total_records,
     }
 
-async def get_expense_category_summary():
+async def get_expense_categories():
 
     category_totals = {}
 
