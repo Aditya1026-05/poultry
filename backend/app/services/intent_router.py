@@ -196,6 +196,10 @@ def is_business_question(message: str) -> bool:
         "recommend",
         "healthy",
         "health",
+        "spending",
+        "spent",
+        "money",
+        "costs",
     ]
 
     return any(word in msg for word in business_keywords)

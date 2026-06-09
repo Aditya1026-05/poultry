@@ -3,10 +3,10 @@ def build_context(data: dict) -> str:
     sections = []
 
     for tool_name, tool_data in data.items():
-        if tool_name.startswith("get_"):
-            tool_name = tool_name.replace("get_", "")
+        
+        normalized_name = tool_name.replace("get_", "")
 
-        if tool_name == "revenue":
+        if normalized_name == "revenue":
 
             sections.append(f"""
 REVENUE DATA
@@ -17,7 +17,7 @@ Today's Revenue: ₹{tool_data.get("todayRevenue", 0)}
 Completed Orders: {tool_data.get("completedOrders", 0)}
 """)
 
-        elif tool_name == "profit":
+        elif normalized_name == "profit":
 
             sections.append(f"""
 PROFIT DATA
@@ -28,7 +28,7 @@ Net Profit: ₹{tool_data.get("netProfit", 0)}
 Profit Margin: {tool_data.get("profitMargin", 0)}%
 """)
 
-        elif tool_name == "orders":
+        elif normalized_name == "orders":
 
             sections.append(f"""
 ORDERS DATA
@@ -41,7 +41,16 @@ Rejected Orders: {tool_data.get("rejected", 0)}
 Total Trays: {tool_data.get("totalTrays", 0)}
 """)
 
-        elif tool_name == "customers":
+        elif normalized_name == "expenses":
+
+            sections.append(f"""
+        EXPENSE DATA
+
+        Total Expenses: ₹{tool_data.get("totalExpenses", 0)}
+        Expense Records: {tool_data.get("expenseRecords", 0)}
+        """)
+
+        elif normalized_name == "customers":
 
             sections.append(f"""
 CUSTOMER DATA
@@ -51,7 +60,7 @@ Top Customer: {tool_data.get("topCustomer")}
 Top Customer Revenue: ₹{tool_data.get("topRevenue", 0)}
 """)
 
-        elif tool_name == "overview":
+        elif normalized_name == "overview":
 
             revenue = tool_data.get("revenue", {})
             profit = tool_data.get("profit", {})
