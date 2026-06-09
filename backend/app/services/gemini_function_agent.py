@@ -85,19 +85,26 @@ User Question:
     if not response.function_calls:
         return safe_generate(message)
 
-    function_name = response.function_calls[0].name
+    data = {}
 
-    print("Function Chosen:", function_name)
+    for function_call in response.function_calls:
 
-    result = await execute_function(
-        function_name
-    )
+        function_name = function_call.name
 
-    data = {
-        function_name: result
-    }
+        print(
+            "Function Chosen:",
+            function_name
+        )
+
+        result = await execute_function(
+            function_name
+        )
+
+        data[function_name] = result
 
     context = build_context(data)
+    print("DATA:")
+    print(data)
 
     prompt = f"""
 You are Star Poultry's Senior Business Analyst.
