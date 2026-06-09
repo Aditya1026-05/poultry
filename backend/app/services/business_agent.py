@@ -6,7 +6,13 @@ from app.services.chat_memory import (
     add_message,
     get_history,
 )
+from app.services.function_router import (
+    get_function_name,
+)
 
+from app.services.function_executor import (
+    execute_function,
+)
 async def business_agent(message: str):
     history = get_history()
 
@@ -20,10 +26,23 @@ async def business_agent(message: str):
 
     #     tools = fallback_tools(message)
 
-    tools = fallback_tools(message)
+    # tools = fallback_tools(message)
 
     
-    data = await execute_tools(tools)
+    # data = await execute_tools(tools)
+
+    # context = build_context(data)
+    function_name = get_function_name(message)
+
+    print("Function Chosen:", function_name)
+
+    result = await execute_function(
+        function_name
+    )
+
+    data = {
+        function_name: result
+    }
 
     context = build_context(data)
 

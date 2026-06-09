@@ -6,9 +6,28 @@ from app.services.function_calling import (
     BUSINESS_TOOLS,
 )
 
-client = genai.Client(
-    api_key=settings.gemini_api_key_3
-)
+clients = []
+
+if settings.gemini_api_key_1:
+    clients.append(
+        genai.Client(
+            api_key=settings.gemini_api_key_1
+        )
+    )
+
+if settings.gemini_api_key_2:
+    clients.append(
+        genai.Client(
+            api_key=settings.gemini_api_key_2
+        )
+    )
+
+if settings.gemini_api_key_3:
+    clients.append(
+        genai.Client(
+            api_key=settings.gemini_api_key_3
+        )
+    )
 
 tool = types.Tool(
     function_declarations=BUSINESS_TOOLS
@@ -17,15 +36,36 @@ tool = types.Tool(
 
 def get_function_name(message: str):
 
-    response = client.models.generate_content(
-        model="gemini-2.5-flash",
-        contents=message,
-        config=types.GenerateContentConfig(
-            tools=[tool]
-        ),
-    )
+    last_error = None
 
-    if not response.function_calls:
-        return None
+    for index, client in enumerate(clients):
 
-    return response.function_calls[0].name
+        try:
+
+            print(
+                f"Function Router Key #{index + 1}"
+            )
+
+            response = client.models.generate_content(
+                model="gemini-2.5-flash",
+                contents=message,
+                config=types.GenerateContentConfig(
+                    tools=[tool]
+                ),
+            )
+
+            if not response.function_calls:
+                return None
+
+            return response.function_calls[0].name
+
+        except Exception as e:
+
+            print(
+                f"Function Router Key #{index + 1} Failed:",
+                str(e)
+            )
+
+            last_error = e
+
+    raise last_error
