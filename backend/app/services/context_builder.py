@@ -103,8 +103,58 @@ Customers:
         {tool_data.get("categories")}
         """)
 
+        elif normalized_name == "customer_details":
+
+            sections.append(f"""
+        CUSTOMER DETAILS
+
+        Customer:
+        {tool_data.get("customer")}
+
+        Total Orders:
+        {tool_data.get("totalOrders", 0)}
+
+        Total Revenue:
+        ₹{tool_data.get("totalRevenue", 0)}
+
+        Total Trays:
+        {tool_data.get("totalTrays", 0)}
+
+        Last Order Date:
+        {tool_data.get("lastOrderDate")}
+
+        Last Order Status:
+        {tool_data.get("lastOrderStatus")}
+
+        Last Delivery Date:
+        {tool_data.get("lastDeliveryDate")}
+        """)
+
+        elif normalized_name == "orders_between_dates":
+
+            sections.append(f"""
+        DATE RANGE REPORT
+
+        Start Date:
+        {tool_data.get("startDate")}
+
+        End Date:
+        {tool_data.get("endDate")}
+
+        Total Orders:
+        {tool_data.get("totalOrders")}
+
+        Total Revenue:
+        ₹{tool_data.get("totalRevenue")}
+
+        Total Trays:
+        {tool_data.get("totalTrays")}
+        """)
+
         else:
 
             sections.append(str(tool_data))
+
+        
 
     return "\n".join(sections)

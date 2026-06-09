@@ -228,3 +228,94 @@ async def get_complete_business_report():
         "expenses": expenses,
         "customers": customers,
     }
+
+async def get_customer_details(
+    customer_name: str,
+):
+
+    customer_orders = []
+
+    cursor = orders_collection.find(
+        {
+            "businessName": customer_name
+        }
+    )
+
+    async for order in cursor:
+        customer_orders.append(order)
+
+    if not customer_orders:
+
+        return {
+            "customer": customer_name,
+            "exists": False,
+        }
+
+    total_orders = len(customer_orders)
+
+    total_revenue = sum(
+        order["totalAmount"]
+        for order in customer_orders
+    )
+
+    total_trays = sum(
+        order["quantity"]
+        for order in customer_orders
+    )
+
+    latest_order = max(
+        customer_orders,
+        key=lambda x: x["createdAt"]
+    )
+
+    return {
+        "customer": customer_name,
+        "exists": True,
+        "totalOrders": total_orders,
+        "totalRevenue": total_revenue,
+        "totalTrays": total_trays,
+        "lastOrderDate": latest_order["createdAt"],
+        "lastOrderStatus": latest_order["status"],
+        "lastDeliveryDate":
+            latest_order.get(
+                "confirmedDeliveryDate"
+            ),
+    }
+
+
+
+async def get_orders_between_dates(
+    start_date: str,
+    end_date: str,
+):
+
+    orders = []
+
+    cursor = orders_collection.find({})
+
+    async for order in cursor:
+
+        order_date = order["createdAt"][:10]
+
+        if start_date <= order_date <= end_date:
+            orders.append(order)
+
+    total_orders = len(orders)
+
+    total_revenue = sum(
+        order["totalAmount"]
+        for order in orders
+    )
+
+    total_trays = sum(
+        order["quantity"]
+        for order in orders
+    )
+
+    return {
+        "startDate": start_date,
+        "endDate": end_date,
+        "totalOrders": total_orders,
+        "totalRevenue": total_revenue,
+        "totalTrays": total_trays,
+    }
