@@ -51,6 +51,29 @@ customer contribution and customer analysis.
 """
     ),
     types.FunctionDeclaration(
+        name="get_customer_details",
+        description="""
+    Get detailed information about a specific customer,
+    customer history,
+    customer revenue,
+    last order date,
+    last delivery date,
+    customer orders,
+    customer purchases,
+    and customer performance.
+    """,
+        parameters=types.Schema(
+            type=types.Type.OBJECT,
+            properties={
+                "customer_name": types.Schema(
+                    type=types.Type.STRING,
+                    description="Business name of the customer"
+                )
+            },
+            required=["customer_name"]
+        )
+    ),
+    types.FunctionDeclaration(
         name="get_overview",
         description="""
 Get complete business overview and business analysis
@@ -59,5 +82,32 @@ orders, business performance, key insights,
 recommendations and areas needing attention.
 """
     ),
-    
+    types.FunctionDeclaration(
+            name="get_orders_between_dates",
+            description="""
+        Get orders, revenue and trays sold
+        between two dates.
+        Use for date range analysis,
+        weekly reports,
+        monthly reports,
+        and custom date reports.
+        """,
+            parameters=types.Schema(
+                type=types.Type.OBJECT,
+                properties={
+                    "start_date": types.Schema(
+                        type=types.Type.STRING,
+                        description="Start date YYYY-MM-DD"
+                    ),
+                    "end_date": types.Schema(
+                        type=types.Type.STRING,
+                        description="End date YYYY-MM-DD"
+                    )
+                },
+                required=[
+                    "start_date",
+                    "end_date"
+                ]
+            )
+        ),
 ]

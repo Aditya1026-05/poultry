@@ -2,15 +2,23 @@ from app.services.function_registry import (
     FUNCTION_REGISTRY,
 )
 
-async def execute_function(function_name: str):
+async def execute_function(
+    function_name: str,
+    **kwargs,
+):
 
     if function_name not in FUNCTION_REGISTRY:
+
         raise ValueError(
             f"Unknown function: {function_name}"
         )
 
-    function = FUNCTION_REGISTRY[function_name]
+    function = FUNCTION_REGISTRY[
+        function_name
+    ]
 
-    result = await function()
+    result = await function(
+        **kwargs
+    )
 
     return result

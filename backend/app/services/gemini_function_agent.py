@@ -99,13 +99,23 @@ User Question:
 
         function_name = function_call.name
 
+        arguments = dict(
+            function_call.args
+        )
+
         print(
             "Function Chosen:",
             function_name
         )
 
+        print(
+            "Arguments:",
+            arguments
+        )
+
         result = await execute_function(
-            function_name
+            function_name,
+            **arguments
         )
 
         data[function_name] = result
