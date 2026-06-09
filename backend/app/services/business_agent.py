@@ -49,6 +49,13 @@ async def business_agent(message: str):
             "Gemini Function Agent Failed:",
             str(e)
         )
+        return """
+# AI Temporarily Busy
+
+The AI analysis service is currently unavailable.
+
+Please try again in a few moments.
+"""
 
     # print("HISTORY:")
     # print(history)
@@ -66,83 +73,83 @@ async def business_agent(message: str):
     # data = await execute_tools(tools)
 
     # context = build_context(data)
-    function_name = get_function_name(message)
+#     function_name = get_function_name(message)
 
-    print("Function Chosen:", function_name)
+#     print("Function Chosen:", function_name)
 
-    if function_name is None:
+#     if function_name is None:
 
-        tools = fallback_tools(message)
+#         tools = fallback_tools(message)
 
-        data = await execute_tools(tools)
+#         data = await execute_tools(tools)
 
-        first_tool = tools[0]
+#         first_tool = tools[0]
 
-        tool_mapping = {
-            "revenue": "get_revenue",
-            "profit": "get_profit",
-            "orders": "get_orders",
-            "expenses": "get_expenses",
-            "customers": "get_customers",
-            "overview": "get_overview",
-        }
+#         tool_mapping = {
+#             "revenue": "get_revenue",
+#             "profit": "get_profit",
+#             "orders": "get_orders",
+#             "expenses": "get_expenses",
+#             "customers": "get_customers",
+#             "overview": "get_overview",
+#         }
 
-        return build_fallback_response(
-            tool_mapping[first_tool],
-            data[first_tool],
-        )
+#         return build_fallback_response(
+#             tool_mapping[first_tool],
+#             data[first_tool],
+#         )
 
-    result = await execute_function(
-        function_name
-    )
+#     result = await execute_function(
+#         function_name
+#     )
 
-    data = {
-        function_name: result
-    }
+#     data = {
+#         function_name: result
+#     }
 
-    context = build_context(data)
+#     context = build_context(data)
 
-    # print("TOOLS:", tools)
-    # print("DATA:", data)
-    # print("CONTEXT:", context)
+#     # print("TOOLS:", tools)
+#     # print("DATA:", data)
+#     # print("CONTEXT:", context)
 
-    prompt = f"""
-You are Star Poultry's Senior Business Analyst.
+#     prompt = f"""
+# You are Star Poultry's Senior Business Analyst.
 
-Conversation History:
+# Conversation History:
 
-{history}
+# {history}
 
-Business Context:
+# Business Context:
 
-{context}
+# {context}
 
-Current User Question:
+# Current User Question:
 
-{message}
+# {message}
 
-Answer using the conversation history when relevant.
+# Answer using the conversation history when relevant.
 
-Rules:
-- Use only provided business data.
-- Do not invent numbers.
-- Give practical recommendations.
-"""
+# Rules:
+# - Use only provided business data.
+# - Do not invent numbers.
+# - Give practical recommendations.
+# """
 
-    response = safe_generate(prompt)
+#     response = safe_generate(prompt)
 
-    if "AI Service Temporarily Unavailable" in response:
+#     if "AI Service Temporarily Unavailable" in response:
 
-        return build_fallback_response(
-            function_name,
-            result,
-        )
+#         return build_fallback_response(
+#             function_name,
+#             result,
+#         )
 
-    add_message("user", message)
-    if "AI Service Temporarily Unavailable" not in response:
-        add_message("assistant", response)
+#     add_message("user", message)
+#     if "AI Service Temporarily Unavailable" not in response:
+#         add_message("assistant", response)
 
-    return response
+#     return response
 
 
 print("Business Agent Loaded")

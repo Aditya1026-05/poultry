@@ -9,6 +9,11 @@ from app.services.gemini_helper import safe_generate
 from app.services.fallback_responses import (
     build_fallback_response,
 )
+
+from app.services.multi_fallback_response import (
+    build_multi_fallback_response,
+)
+
 clients = []
 
 if settings.gemini_api_key_1:
@@ -60,10 +65,13 @@ User Question:
 
 {message}
 """,
+            
                 config=types.GenerateContentConfig(
                     tools=[tool]
                 )
             )
+            print("RAW RESPONSE:")
+            print(response.text)
 
             break
 
@@ -126,9 +134,12 @@ Answer using only the provided data.
 
     if "AI Service Temporarily Unavailable" in response:
 
-        return build_fallback_response(
-            function_name,
-            result,
+        print(
+            "Using Multi Function Fallback"
+        )
+
+        return build_multi_fallback_response(
+            data
         )
 
     return response
