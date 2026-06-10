@@ -9,6 +9,7 @@ from app.services.ai_tools import (
     get_expense_categories,
     get_customer_details,
     get_orders_between_dates,
+    get_order_records,
 )
 
 FUNCTION_REGISTRY = {
@@ -21,4 +22,5 @@ FUNCTION_REGISTRY = {
     "get_expense_categories": get_expense_categories,
     "get_customer_details": get_customer_details,
     "get_orders_between_dates": get_orders_between_dates,
+    "get_order_records": get_order_records,
 }
