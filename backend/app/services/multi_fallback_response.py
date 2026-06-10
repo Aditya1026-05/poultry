@@ -74,4 +74,78 @@ ORDER DATA
 """
         )
 
+    if "get_customer_details" in data:
+
+        customers = data["get_customer_details"]
+
+        if not isinstance(customers, list):
+            customers = [customers]
+
+        customer_text = ""
+
+        for customer in customers:
+
+            customer_text += f"""
+    • Customer: {customer.get("customer")}
+    • Orders: {customer.get("totalOrders")}
+    • Revenue: ₹{customer.get("totalRevenue")}
+    • Trays: {customer.get("totalTrays")}
+    • Last Order: {customer.get("lastOrderDate")}
+    • Last Delivery: {customer.get("lastDeliveryDate")}
+
+    """
+
+        sections.append(
+            f"""
+    CUSTOMER DETAILS
+
+    {customer_text}
+    """
+    )
+
+    if "get_expense_categories" in data:
+
+        expense_data = data["get_expense_categories"]
+
+        sections.append(
+            f"""
+    EXPENSE CATEGORY DATA
+
+    • Largest Category:
+    {expense_data.get("largestCategory")}
+
+    • Largest Amount:
+    ₹{expense_data.get("largestAmount")}
+
+    • Categories:
+    {expense_data.get("categories")}
+    """
+        )
+
+    if "get_orders_between_dates" in data:
+
+        report = data["get_orders_between_dates"]
+
+        sections.append(
+            f"""
+    DATE RANGE REPORT
+
+    • Start Date:
+    {report.get("startDate")}
+
+    • End Date:
+    {report.get("endDate")}
+
+    • Total Orders:
+    {report.get("totalOrders")}
+
+    • Total Revenue:
+    ₹{report.get("totalRevenue")}
+
+    • Total Trays:
+    {report.get("totalTrays")}
+    """
+        )
+
+
     return "\n".join(sections)

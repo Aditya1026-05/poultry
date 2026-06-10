@@ -319,3 +319,49 @@ async def get_orders_between_dates(
         "totalRevenue": total_revenue,
         "totalTrays": total_trays,
     }
+
+async def get_order_records(
+    customer_name=None,
+    status=None,
+    start_date=None,
+    end_date=None,
+    limit=50,
+):
+
+    query = {}
+
+    if customer_name:
+        query["businessName"] = customer_name
+
+    if status:
+        query["status"] = status
+
+    if start_date and end_date:
+
+        query["createdAt"] = {
+            "$gte": start_date,
+            "$lte": end_date,
+        }
+
+    orders = await orders_collection.find(
+        query
+    ).to_list(limit)
+
+    records = []
+
+    for order in orders:
+
+        records.append(
+            {
+                "customer": order["businessName"],
+                "quantity": order["quantity"],
+                "revenue": order["totalAmount"],
+                "status": order["status"],
+                "deliveryDate": order.get(
+                    "confirmedDeliveryDate"
+                ),
+                "createdAt": order["createdAt"],
+            }
+        )
+
+    return records

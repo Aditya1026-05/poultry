@@ -16,6 +16,20 @@ def wants_expense_categories(message: str) -> bool:
 
     msg = message.lower()
 
+    customer_entities = [
+        "fresh shop",
+        "star poultry admin",
+        "b1",
+        "b2",
+        "b#",
+    ]
+
+    if any(
+        entity in msg
+        for entity in customer_entities
+    ):
+        return "customers"
+
     keywords = [
         "category",
         "categories",
@@ -154,6 +168,19 @@ def detect_intent(message: str) -> Intent:
 def is_business_question(message: str) -> bool:
 
     msg = message.lower().strip()
+    known_business_entities = [
+    "fresh shop",
+    "star poultry admin",
+    "b1",
+    "b2",
+    "b#",
+    ]
+
+    if any(
+        entity in msg
+        for entity in known_business_entities
+    ):
+        return True
 
     follow_ups = [
         "why",

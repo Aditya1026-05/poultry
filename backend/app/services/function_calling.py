@@ -110,4 +110,39 @@ recommendations and areas needing attention.
                 ]
             )
         ),
+
+        types.FunctionDeclaration(
+            name="get_order_records",
+            description="""
+        Get actual order records.
+
+        Use when the user asks:
+        - show orders
+        - order history
+        - recent orders
+        - customer orders
+        - completed orders
+        - pending orders
+        - orders between dates
+
+        Returns detailed order records instead of summaries.
+        """,
+            parameters=types.Schema(
+                type=types.Type.OBJECT,
+                properties={
+                    "customer_name": types.Schema(
+                        type=types.Type.STRING
+                    ),
+                    "status": types.Schema(
+                        type=types.Type.STRING
+                    ),
+                    "start_date": types.Schema(
+                        type=types.Type.STRING
+                    ),
+                    "end_date": types.Schema(
+                        type=types.Type.STRING
+                    ),
+                },
+            ),
+        ),
 ]

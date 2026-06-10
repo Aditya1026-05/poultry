@@ -14,7 +14,25 @@ from app.services.multi_fallback_response import (
     build_multi_fallback_response,
 )
 
+from app.services.conversation_state import (
+    set_customer,
+    set_date_range,
+    set_last_function,
+)
+
+from app.services.followup_resolver import (
+    resolve_followup,
+)
+
+
+
 clients = []
+
+from datetime import datetime
+
+
+
+today = datetime.now().date().isoformat()
 
 if settings.gemini_api_key_1:
     clients.append(
@@ -44,6 +62,13 @@ tool = types.Tool(
 
 async def gemini_function_agent(message: str):
 
+    message = resolve_followup(message)
+
+    print(
+        "Resolved Message:",
+        message
+    )
+
     last_error = None
 
     for index, client in enumerate(clients):
@@ -57,14 +82,95 @@ async def gemini_function_agent(message: str):
             response = client.models.generate_content(
                 model="gemini-2.5-flash",
                 contents=f"""
-You are Star Poultry's AI Business Assistant.
+                You are Star Poultry's AI Business Assistant.
 
-Always use the available functions when they can answer the user's question.
+                Today's Date:
+                {today}
 
-User Question:
+                Date Handling Rules:
 
-{message}
-""",
+                - When the user mentions only month names (May, June, July, etc.), assume the CURRENT YEAR from Today's Date.
+                - Never assume previous years unless the user explicitly mentions a year.
+                - Convert natural language dates into exact YYYY-MM-DD dates before calling functions.
+
+                Examples:
+
+                User: Revenue between May and June
+                start_date = "2026-05-01"
+                end_date = "2026-06-30"
+
+                User: Orders between June and July
+                start_date = "2026-06-01"
+                end_date = "2026-07-31"
+
+                Available business functions contain:
+                - revenue information
+                - profit information
+                - order information
+                - customer information
+                - expense information
+                - date range analytics
+
+                Always call functions whenever business data is required.
+
+                Rules:
+
+                - If the user mentions a customer name, use get_customer_details.
+                - If multiple customer names are mentioned, call get_customer_details for EACH customer.
+                - For customer comparisons, ALWAYS fetch data for all mentioned customers before answering.
+
+                - Use get_customer_details for:
+                    * customer summaries
+                    * customer revenue
+                    * customer trays
+                    * customer delivery information
+                    * customer statistics
+
+                - Use get_order_records for:
+                    * show orders
+                    * order history
+                    * recent orders
+                    * list orders
+                    * customer order history
+                    * completed orders
+                    * pending orders
+                    * delivered orders
+                    * orders between dates
+                    * detailed order information
+
+                - Prefer get_order_records over summary functions whenever the user asks to SHOW, LIST, DISPLAY, or VIEW orders.
+
+                Examples:
+
+                            User: Which customer bought the most trays?
+                            Use get_customers
+
+                            User: Who generated the most revenue?
+                            Use get_customers
+
+                            User: Tell me about Fresh Shop
+                            Use get_customer_details
+
+                            User: Compare B1 and B2
+                            Use get_customer_details for BOTH customers
+
+                            User: Show B2 order history
+                            Use get_order_history
+
+                            User: Revenue between May and June
+                            Use get_orders_between_dates
+
+                            User: Why is my profit negative?
+                            Use get_overview
+
+                - For month names like May, June, July, assume the current year unless specified.
+                - Do not guess dates.
+                - Prefer function calls over text answers.
+
+                User Question:
+
+                {message}
+                """,
             
                 config=types.GenerateContentConfig(
                     tools=[tool]
@@ -103,6 +209,25 @@ User Question:
             function_call.args
         )
 
+        set_last_function(function_name)
+
+        if "customer_name" in arguments:
+
+            set_customer(
+                arguments["customer_name"]
+            )
+
+            if (
+                "start_date" in arguments
+                and
+                "end_date" in arguments
+            ):
+
+                set_date_range(
+                    arguments["start_date"],
+                    arguments["end_date"]
+    )
+
         print(
             "Function Chosen:",
             function_name
@@ -118,7 +243,20 @@ User Question:
             **arguments
         )
 
-        data[function_name] = result
+        if function_name in data:
+
+            if not isinstance(
+                data[function_name],
+                list
+            ):
+                data[function_name] = [
+                    data[function_name]
+                ]
+
+            data[function_name].append(result)
+
+        else:
+            data[function_name] = result
 
     context = build_context(data)
     print("DATA:")

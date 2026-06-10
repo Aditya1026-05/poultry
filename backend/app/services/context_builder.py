@@ -58,6 +58,11 @@ CUSTOMER DATA
 Total Customers: {tool_data.get("totalCustomers", 0)}
 Top Customer: {tool_data.get("topCustomer")}
 Top Customer Revenue: ₹{tool_data.get("topRevenue", 0)}
+
+Customer Breakdown:
+
+{tool_data.get("customers", {})}
+
 """)
 
         elif normalized_name == "overview":
@@ -103,31 +108,63 @@ Customers:
         {tool_data.get("categories")}
         """)
 
-        elif normalized_name == "customer_details":
+        elif normalized_name == "order_records":
 
-            sections.append(f"""
+            if not isinstance(tool_data, list):
+                tool_data = [tool_data]
+
+            records_text = ""
+
+            for index, record in enumerate(tool_data, start=1):
+
+
+                records_text += f"""
+        Customer: {record.get("customer")}
+        Quantity: {record.get("quantity")}
+        Revenue: ₹{record.get("revenue")}
+        Status: {record.get("status")}
+        Delivery Date: {record.get("deliveryDate")}
+        Order Date: {record.get("createdAt")}
+
+        """
+
+            sections.append(
+                f"""
+        ORDER RECORDS
+
+        {records_text}
+        """
+            )
+
+        elif normalized_name == "customer_details":
+            if not isinstance(tool_data, list):
+                tool_data = [tool_data]
+
+            for customer in tool_data:
+
+                sections.append(f"""
         CUSTOMER DETAILS
 
         Customer:
-        {tool_data.get("customer")}
+        {customer.get("customer")}
 
         Total Orders:
-        {tool_data.get("totalOrders", 0)}
+        {customer.get("totalOrders", 0)}
 
         Total Revenue:
-        ₹{tool_data.get("totalRevenue", 0)}
+        ₹{customer.get("totalRevenue", 0)}
 
         Total Trays:
-        {tool_data.get("totalTrays", 0)}
+        {customer.get("totalTrays", 0)}
 
         Last Order Date:
-        {tool_data.get("lastOrderDate")}
+        {customer.get("lastOrderDate")}
 
         Last Order Status:
-        {tool_data.get("lastOrderStatus")}
+        {customer.get("lastOrderStatus")}
 
         Last Delivery Date:
-        {tool_data.get("lastDeliveryDate")}
+        {customer.get("lastDeliveryDate")}
         """)
 
         elif normalized_name == "orders_between_dates":
