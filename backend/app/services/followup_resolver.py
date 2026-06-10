@@ -26,6 +26,7 @@ def resolve_followup(message: str):
         "delivery date",
         "status",
     ]
+    
 
     if msg in customer_followups:
 
