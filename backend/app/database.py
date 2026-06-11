@@ -10,3 +10,5 @@ users_collection = db["users"]
 orders_collection = db["orders"]
 settings_collection = db["settings"]
 expenses_collection = db["expenses"]
+alerts_collection = db["alerts"]
+

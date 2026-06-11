@@ -29,6 +29,13 @@ export default function Navbar() {
           <span className="font-display text-xl tracking-tight">Star Poultry</span>
         </a>
         <ul className="hidden md:flex items-center gap-8 text-sm text-muted-foreground">
+          {user?.role === "admin" && (
+            <li>
+              <Link to="/admin/alerts" className="relative hover:text-foreground transition-colors font-semibold text-amber-500">
+                Alerts 🔔
+              </Link>
+            </li>
+          )}
           {links.map((l) => (
             <li key={l.href}>
               <a href={l.href} className="relative hover:text-foreground transition-colors">

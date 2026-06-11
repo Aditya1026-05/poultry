@@ -65,7 +65,11 @@ async def create_expense(payload: ExpenseRequest, _admin=Depends(require_admin))
         "updatedAt": timestamp,
     }
     await expenses_collection.insert_one(expense)
+    # Trigger real-time alert generation upon business event
+    from app.services.alert_engine import generate_alerts
+    await generate_alerts()
     return clean_expense(expense)
+
 
 
 @router.get("", response_model=list[ExpenseResponse])
@@ -178,6 +182,9 @@ async def update_expense(
     patch = payload.model_dump(exclude_unset=True)
     patch["updatedAt"] = now_iso()
     await expenses_collection.update_one({"id": expense_id}, {"$set": patch})
+    # Trigger real-time alert generation upon business event
+    from app.services.alert_engine import generate_alerts
+    await generate_alerts()
     updated = await expenses_collection.find_one({"id": expense_id})
     return clean_expense(updated)
 
@@ -187,4 +194,7 @@ async def delete_expense(expense_id: str, _admin=Depends(require_admin)):
     result = await expenses_collection.delete_one({"id": expense_id})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Expense not found")
+    # Trigger real-time alert generation upon business event
+    from app.services.alert_engine import generate_alerts
+    await generate_alerts()
     return {"message": "Expense deleted"}

@@ -96,7 +96,11 @@ async def create_order(payload: CreateOrderRequest, user=Depends(get_current_use
     }
 
     await orders_collection.insert_one(order)
+    # Trigger real-time alert generation upon business event
+    from app.services.alert_engine import generate_alerts
+    await generate_alerts()
     return clean_order(order)
+
 
 
 @router.get("/mine", response_model=list[OrderResponse])
@@ -307,5 +311,8 @@ async def update_order(order_id: str, payload: UpdateOrderRequest, _admin=Depend
     patch["updatedAt"] = now_iso()
 
     await orders_collection.update_one({"id": order_id}, {"$set": patch})
+    # Trigger real-time alert generation upon business event
+    from app.services.alert_engine import generate_alerts
+    await generate_alerts()
     updated = await orders_collection.find_one({"id": order_id})
     return clean_order(updated)
