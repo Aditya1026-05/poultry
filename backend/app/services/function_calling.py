@@ -240,6 +240,73 @@ recommendations and areas needing attention.
         ),
 
         types.FunctionDeclaration(
+            name="get_dormant_customers",
+            description="""
+            Analyze customer activity and identify dormant customers.
+
+            Returns:
+            - Dormant customers
+            - Days inactive
+            - Last order date
+            - Total dormant customer count
+
+            Use when user asks:
+
+            - Which customers are inactive?
+            - Dormant customers
+            - Missing customers
+            - Who has not ordered recently?
+            - Which customers stopped ordering?
+            - Show inactive customers
+            - Customer retention risk
+            - Which customers need follow up?
+            - Customers not ordering anymore
+            - Lost customers
+            - At risk customers
+
+            This function helps identify customers that may be leaving the business.
+            """
+        ),
+
+        types.FunctionDeclaration(
+            name="get_customer_segments",
+            description="""
+            Customer Segmentation Analytics.
+
+            Categorizes customers into:
+
+            - VIP Customers
+            - Regular Customers
+            - Low Activity Customers
+
+            Returns revenue, orders, and tray information
+            for each customer segment.
+
+            Use when the user asks:
+
+            - Segment my customers
+            - Customer segmentation
+            - Who are my VIP customers?
+            - VIP customers
+            - Best customers
+            - Most valuable customers
+            - Which customers should I focus on?
+            - Regular customers
+            - Low activity customers
+            - Customer categories
+            - Classify customers
+            - Customer groups
+            - Show customer segments
+            - Customer portfolio analysis
+
+            This function helps identify
+            high-value customers,
+            growth customers,
+            and low-engagement customers.
+            """
+        ),
+
+        types.FunctionDeclaration(
             name="get_order_records",
             description="""
         Get actual order records.

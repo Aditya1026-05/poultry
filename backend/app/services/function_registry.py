@@ -20,6 +20,13 @@ from app.services.revenue_trends import (
 from app.services.customer_rankings import (
     get_customer_rankings,
 )
+from app.services.dormant_customers import (
+    get_dormant_customers,
+)
+
+from app.services.customer_segments import (
+    get_customer_segments,
+)
 
 FUNCTION_REGISTRY = {
     "get_revenue": get_revenue_summary,
@@ -35,4 +42,6 @@ FUNCTION_REGISTRY = {
     "get_business_health": get_business_health,
     "get_revenue_trends": get_revenue_trends,
     "get_customer_rankings": get_customer_rankings,
+    "get_dormant_customers": get_dormant_customers,
+    "get_customer_segments": get_customer_segments,
 }

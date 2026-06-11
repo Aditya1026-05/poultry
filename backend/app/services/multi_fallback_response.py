@@ -239,5 +239,40 @@ ORDER DATA
     """
         )
 
+    if "get_dormant_customers" in data:
+
+        dormant = data["get_dormant_customers"]
+
+        sections.append(
+            f"""
+        DORMANT CUSTOMER ANALYSIS
+
+        Dormant Customer Count:
+        {dormant.get("count")}
+
+        Dormant Customers:
+        {dormant.get("dormantCustomers")}
+        """
+            )
+
+    if "get_customer_segments" in data:
+
+        segments = data["get_customer_segments"]
+
+        sections.append(
+            f"""
+        CUSTOMER SEGMENTATION
+
+        VIP Customers:
+        {segments.get("vipCustomers")}
+
+        Regular Customers:
+        {segments.get("regularCustomers")}
+
+        Low Activity Customers:
+        {segments.get("lowActivityCustomers")}
+        """
+            )
+
 
     return "\n".join(sections)

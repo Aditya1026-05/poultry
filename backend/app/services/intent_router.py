@@ -218,6 +218,9 @@ def is_business_question(message: str) -> bool:
         "how?",
         "explain",
         "tell me more",
+        "what do you mean",
+        "why this",
+        
     ]
 
     if msg in follow_ups:
