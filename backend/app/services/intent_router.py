@@ -84,6 +84,32 @@ def detect_intent(message: str) -> Intent:
     "focus",
     "improve business",
     "improve profit",
+    "trend",
+    "trends",
+    "growth",
+    "growing",
+    "compare",
+    "comparison",
+    "month",
+    "months",
+    "best month",
+    "performed best",
+    "performed",
+    "best",
+
+]
+
+    trend_keywords = [
+    "trend",
+    "trends",
+    "growth",
+    "growing",
+    "compare",
+    "comparison",
+    "month",
+    "months",
+    "best month",
+    "performed best",
 ]
 
     profit_keywords = [
@@ -161,6 +187,9 @@ def detect_intent(message: str) -> Intent:
     if any(word in msg for word in overview_keywords):
         return "overview"
 
+    if any(word in msg for word in trend_keywords):
+        return "analysis"
+
     
 
     return "general"
@@ -227,6 +256,16 @@ def is_business_question(message: str) -> bool:
         "spent",
         "money",
         "costs",
+        "month",
+        "months",
+        "trend",
+        "trends",
+        "growth",
+        "growing",
+        "compare",
+        "comparison",
+        "performed",
+        "best month",
     ]
 
     return any(word in msg for word in business_keywords)

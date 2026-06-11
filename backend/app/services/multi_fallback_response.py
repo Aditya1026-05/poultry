@@ -147,5 +147,97 @@ ORDER DATA
     """
         )
 
+    if "get_business_health" in data:
+
+        health = data["get_business_health"]
+
+        strengths = "\n".join(
+            f"• {item}"
+            for item in health["strengths"]
+        )
+
+        issues = "\n".join(
+            f"• {item}"
+            for item in health["issues"]
+        )
+
+        recommendations = "\n".join(
+            f"• {item}"
+            for item in health["recommendations"]
+        )
+
+        sections.append(
+            f"""
+    BUSINESS HEALTH REPORT
+
+    Health Score: {health['healthScore']}/100
+
+    Status: {health['status']}
+
+    Strengths:
+    {strengths}
+
+    Issues:
+    {issues}
+
+    Recommendations:
+    {recommendations}
+    """
+        )
+
+    if "get_revenue_trends" in data:
+
+        trend = data["get_revenue_trends"]
+
+        sections.append(
+            f"""
+    REVENUE TREND ANALYSIS
+
+    Current Month:
+    {trend.get("currentMonth")}
+
+    Revenue:
+    ₹{trend.get("currentRevenue")}
+
+    Previous Month:
+    {trend.get("previousMonth")}
+
+    Revenue:
+    ₹{trend.get("previousRevenue")}
+
+    Growth:
+    {trend.get("displayGrowth", trend.get("growthPercent"))}%
+
+    Trend:
+    {trend.get("trend")}
+
+    Best Month:
+    {trend.get("bestMonth")}
+
+    Best Revenue:
+    ₹{trend.get("bestRevenue")}
+    """
+        )
+
+
+    if "get_customer_rankings" in data:
+
+        rankings = data["get_customer_rankings"]
+
+        sections.append(
+            f"""
+    CUSTOMER INTELLIGENCE
+
+    VIP Customer:
+    {rankings.get("vipCustomer")}
+
+    Top Revenue Customers:
+    {rankings.get("topRevenueCustomers")}
+
+    Top Tray Customers:
+    {rankings.get("topTrayCustomers")}
+    """
+        )
+
 
     return "\n".join(sections)
