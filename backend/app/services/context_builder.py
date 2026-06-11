@@ -188,6 +188,115 @@ Customers:
         {tool_data.get("totalTrays")}
         """)
 
+        elif normalized_name == "business_health":
+
+            sections.append(f"""
+        BUSINESS HEALTH
+
+        Health Score:
+        {tool_data.get("healthScore")}
+
+        Status:
+        {tool_data.get("status")}
+
+        Strengths:
+        {tool_data.get("strengths")}
+
+        Issues:
+        {tool_data.get("issues")}
+
+        Recommendations:
+        {tool_data.get("recommendations")}
+
+        Priorities:
+        {tool_data.get("priorities")}
+        """)
+
+
+        elif normalized_name == "revenue_trends":
+
+            sections.append(f"""
+        REVENUE TREND ANALYSIS
+
+        Current Month:
+        {tool_data.get("currentMonth")}
+
+        Current Revenue:
+        ₹{tool_data.get("currentRevenue")}
+
+        Previous Month:
+        {tool_data.get("previousMonth")}
+
+        Previous Revenue:
+        ₹{tool_data.get("previousRevenue")}
+
+        Growth:
+        {tool_data.get("displayGrowth", tool_data.get("growthPercent"))}%
+
+        Trend:
+        {tool_data.get("trend")}
+
+        Best Month:
+        {tool_data.get("bestMonth")}
+
+        Best Revenue:
+        ₹{tool_data.get("bestRevenue")}
+        """)
+
+        elif normalized_name == "customer_rankings":
+
+            revenue_text = ""
+
+            for index, customer in enumerate(
+                tool_data.get(
+                    "topRevenueCustomers",
+                    []
+                ),
+                start=1,
+            ):
+
+                revenue_text += f"""
+        {index}. {customer.get("customer")}
+        Revenue: ₹{customer.get("revenue")}
+        Orders: {customer.get("orders")}
+        Trays: {customer.get("trays")}
+
+        """
+
+            tray_text = ""
+
+            for index, customer in enumerate(
+                tool_data.get(
+                    "topTrayCustomers",
+                    []
+                ),
+                start=1,
+            ):
+
+                tray_text += f"""
+        {index}. {customer.get("customer")}
+        Trays: {customer.get("trays")}
+        Revenue: ₹{customer.get("revenue")}
+
+        """
+
+            sections.append(
+                f"""
+        CUSTOMER INTELLIGENCE
+
+        VIP Customer:
+        {tool_data.get("vipCustomer")}
+
+        TOP REVENUE CUSTOMERS
+
+        {revenue_text}
+
+        TOP TRAY CUSTOMERS
+
+        {tray_text}
+        """
+            )
+
         else:
 
             sections.append(str(tool_data))

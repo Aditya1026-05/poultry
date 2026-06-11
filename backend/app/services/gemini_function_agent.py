@@ -167,6 +167,63 @@ async def gemini_function_agent(message: str):
                 - Do not guess dates.
                 - Prefer function calls over text answers.
 
+                Business Health Rules:
+
+                Use get_business_health whenever the user asks for:
+
+                - business health
+                - business performance
+                - business analysis
+                - profitability analysis
+                - strengths
+                - weaknesses
+                - issues
+                - recommendations
+                - focus areas
+                - improvement opportunities
+                - growth suggestions
+                - areas needing attention
+
+                Examples:
+
+                How healthy is my business?
+                What needs attention?
+                What is hurting profitability?
+                Why am I losing money?
+                What should I focus on?
+                How can I improve profit?
+                Give me business recommendations.
+                Analyze my business.
+                What are my strengths and weaknesses?
+
+
+                Revenue Trend Rules:
+
+                Use get_revenue_trends when the user asks:
+
+                - Is revenue growing?
+                - Revenue trend
+                - Compare this month vs last month
+                - Which month performed best?
+                - Revenue growth
+                - Is business improving?
+                - Growth analysis
+                - Revenue analysis  
+
+
+                Customer Intelligence Rules:
+
+                    Use get_customer_rankings when the user asks:
+
+                    - VIP customers
+                    - Top customers
+                    - Rank customers
+                    - Customer rankings
+                    - Best customers
+                    - Most valuable customers
+                    - Customer leaderboard
+                    - Who buys the most trays?
+
                 User Question:
 
                 {message}
