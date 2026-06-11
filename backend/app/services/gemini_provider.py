@@ -23,6 +23,14 @@ from app.services.tool_executor import execute_tools
 from app.services.context_builder import build_context
 from app.services.business_agent import business_agent
 
+from app.services.followup_detector import (
+    is_followup,
+)
+
+from app.services.followup_service import (
+    handle_followup,
+)
+
 class GeminiProvider(AIProvider):
 
     # def __init__(self):
@@ -44,6 +52,18 @@ class GeminiProvider(AIProvider):
 
         #     tools = []
         print("Incoming Message:", repr(message))
+
+        if is_followup(message):
+
+            print("Follow-Up Detected")
+
+            followup_response = (
+                handle_followup(message)
+            )
+
+            if followup_response:
+
+                return followup_response
 
         intent = detect_intent(message)
         

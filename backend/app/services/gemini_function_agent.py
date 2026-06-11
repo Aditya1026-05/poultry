@@ -24,7 +24,9 @@ from app.services.followup_resolver import (
     resolve_followup,
 )
 
-
+from app.services.conversation_state import (
+    save_context,
+)
 
 clients = []
 
@@ -358,6 +360,12 @@ async def gemini_function_agent(message: str):
             data[function_name] = result
 
     context = build_context(data)
+    save_context(
+    question=message,
+    tool=list(data.keys()),
+    data=data,
+    context_text=context,
+    )
     print("DATA:")
     print(data)
     print("FINAL CONTEXT:")
