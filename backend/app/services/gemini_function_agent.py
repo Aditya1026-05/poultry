@@ -224,6 +224,48 @@ async def gemini_function_agent(message: str):
                     - Customer leaderboard
                     - Who buys the most trays?
 
+                Dormant Customer Rules:
+
+                Use get_dormant_customers when the user asks:
+
+                - Dormant customers
+                - Inactive customers
+                - Lost customers
+                - Customers who stopped ordering
+                - Customers needing follow up
+                - Customer retention risk
+                - Customers at risk
+                - Who has not ordered recently
+                - Which customers are inactive
+                - Which customers stopped buying
+                - Show dormant customers
+                - Show inactive customers
+                - Customers not ordering anymore
+                - Customers we may lose
+                - Which customers should I contact
+                - Which customers need attention
+
+                This function identifies customers that have not placed orders
+                within the inactivity threshold and may require follow up.
+
+                Customer Segmentation Rules:
+
+                Use get_customer_segments when the user asks:
+
+                - Segment my customers
+                - Customer segmentation
+                - Customer categories
+                - Customer groups
+                - VIP customers
+                - Regular customers
+                - Low activity customers
+                - Classify customers
+                - Show customer segments
+                - Which customers should I focus on?
+                - Customer portfolio analysis
+                - High value customers
+                - Valuable customers
+
                 User Question:
 
                 {message}

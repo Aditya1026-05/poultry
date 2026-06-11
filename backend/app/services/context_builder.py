@@ -243,6 +243,104 @@ Customers:
         ₹{tool_data.get("bestRevenue")}
         """)
 
+
+        elif normalized_name == "dormant_customers":
+
+            dormant_text = ""
+
+            for customer in tool_data.get(
+                "dormantCustomers",
+                []
+            ):
+
+                dormant_text += f"""
+        Customer: {customer.get("customer")}
+        Days Inactive: {customer.get("daysInactive")}
+        Last Order Date: {customer.get("lastOrderDate")}
+
+        """
+
+            sections.append(
+                f"""
+        DORMANT CUSTOMER ANALYSIS
+
+        Threshold Days:
+        {tool_data.get("thresholdDays")}
+
+        Dormant Customer Count:
+        {tool_data.get("count")}
+
+        Dormant Customers:
+
+        {dormant_text}
+        """
+            )
+
+        elif normalized_name == "customer_segments":
+
+            vip_text = ""
+
+            for customer in tool_data.get(
+                "vipCustomers",
+                []
+            ):
+
+                vip_text += f"""
+        {customer.get("customer")}
+        Revenue: ₹{customer.get("revenue")}
+        Orders: {customer.get("orders")}
+        Trays: {customer.get("trays")}
+
+        """
+
+            regular_text = ""
+
+            for customer in tool_data.get(
+                "regularCustomers",
+                []
+            ):
+
+                regular_text += f"""
+        {customer.get("customer")}
+        Revenue: ₹{customer.get("revenue")}
+        Orders: {customer.get("orders")}
+        Trays: {customer.get("trays")}
+
+        """
+
+            low_text = ""
+
+            for customer in tool_data.get(
+                "lowActivityCustomers",
+                []
+            ):
+
+                low_text += f"""
+        {customer.get("customer")}
+        Revenue: ₹{customer.get("revenue")}
+        Orders: {customer.get("orders")}
+        Trays: {customer.get("trays")}
+
+        """
+
+            sections.append(
+                f"""
+        CUSTOMER SEGMENTATION
+
+        VIP CUSTOMERS
+
+        {vip_text}
+
+        REGULAR CUSTOMERS
+
+        {regular_text}
+
+        LOW ACTIVITY CUSTOMERS
+
+        {low_text}
+        """
+            )
+
         elif normalized_name == "customer_rankings":
 
             revenue_text = ""
@@ -296,6 +394,8 @@ Customers:
         {tray_text}
         """
             )
+
+
 
         else:
 
