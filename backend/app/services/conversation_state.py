@@ -9,6 +9,7 @@ conversation_state = {
     "last_question": None,
     "last_tool": None,
     "last_data": None,
+    "last_context": None,
 }
 
 
@@ -74,6 +75,7 @@ def save_context(
     question: str,
     tool,
     data,
+    context_text=None,
 ):
 
     conversation_state[
@@ -87,6 +89,10 @@ def save_context(
     conversation_state[
         "last_data"
     ] = data
+
+    conversation_state[
+        "last_context"
+    ] = context_text
 
 
 def get_context():
@@ -106,6 +112,11 @@ def get_context():
             conversation_state[
                 "last_data"
             ],
+
+        "context":
+            conversation_state[
+                "last_context"
+            ],
     }
 
 
@@ -121,4 +132,8 @@ def clear_context():
 
     conversation_state[
         "last_data"
+    ] = None
+
+    conversation_state[
+        "last_context"
     ] = None
