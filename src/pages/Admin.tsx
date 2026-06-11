@@ -12,8 +12,12 @@ import {
   Truck,
   Upload,
   XCircle,
+  AlertTriangle,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import AppHeader from "@/components/AppHeader";
+import { getAlerts, dismissAlert, Alert } from "@/lib/alertsApi";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -48,6 +52,25 @@ export default function Admin() {
   const [settings, setSettings] = useState<Settings | null>(null);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<Order | null>(null);
+  const [criticalAlerts, setCriticalAlerts] = useState<Alert[]>([]);
+  const [showPopup, setShowPopup] = useState(false);
+  const navigate = useNavigate();
+
+  const checkCriticalAlerts = async () => {
+    try {
+      const allAlerts = await getAlerts();
+      const unresolvedCritical = allAlerts.filter(
+        (a) => a.severity === "critical" && !a.isRead && !a.isResolved && !a.isDismissed
+      );
+      if (unresolvedCritical.length > 0) {
+        setCriticalAlerts(unresolvedCritical);
+        setShowPopup(true);
+      }
+    } catch (err) {
+      console.error("Failed to check critical alerts:", err);
+    }
+  };
+
 
   const refresh = async () => {
     const [o, s] = await Promise.all([getAllOrders(), getSettings()]);
@@ -58,7 +81,9 @@ export default function Admin() {
 
   useEffect(() => {
     refresh();
+    checkCriticalAlerts();
   }, []);
+
 
   if (loading || !settings) {
     return (
@@ -139,6 +164,65 @@ export default function Admin() {
           setSelected(null);
         }}
       />
+
+      {/* Critical Alerts Dashboard Popup Modal */}
+      <Dialog open={showPopup} onOpenChange={setShowPopup}>
+        <DialogContent className="max-w-md glass-strong border-red-500/30">
+          <DialogHeader className="flex flex-row items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-red-500/10 text-red-500">
+              <AlertTriangle className="h-6 w-6 animate-bounce" />
+            </div>
+            <div>
+              <DialogTitle className="font-display text-xl text-red-400">
+                Critical Business Alert{criticalAlerts.length > 1 ? "s" : ""}
+              </DialogTitle>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Please review these urgent issues impacting poultry farm operations.
+              </p>
+            </div>
+          </DialogHeader>
+
+          <div className="space-y-4 my-2 max-h-60 overflow-y-auto pr-1">
+            {criticalAlerts.map((alert) => (
+              <div key={alert.id} className="p-4 rounded-xl border border-red-500/20 bg-red-500/5 space-y-1">
+                <h4 className="font-semibold text-sm text-foreground">{alert.title}</h4>
+                <p className="text-xs text-muted-foreground">{alert.message}</p>
+                <div className="flex justify-end gap-2 pt-2">
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-8 text-xs text-muted-foreground hover:bg-muted"
+                    onClick={async () => {
+                      try {
+                        await dismissAlert(alert.id);
+                        setCriticalAlerts((prev) => prev.filter((a) => a.id !== alert.id));
+                        toast.success("Alert dismissed from popup");
+                        if (criticalAlerts.length <= 1) {
+                          setShowPopup(false);
+                        }
+                      } catch (err) {
+                        toast.error("Failed to dismiss alert");
+                      }
+                    }}
+                  >
+                    Dismiss
+                  </Button>
+                  <Button
+                    size="sm"
+                    className="h-8 text-xs bg-red-600 hover:bg-red-500 text-white"
+                    onClick={() => {
+                      setShowPopup(false);
+                      navigate("/admin/alerts");
+                    }}
+                  >
+                    View Alert
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
