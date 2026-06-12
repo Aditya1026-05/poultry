@@ -13,7 +13,7 @@ An enterprise SaaS farm management and business intelligence platform designed f
 
 ---
 
-## 🚀 Key Architectural Bullet Points & Deep Dive
+## 🚀 Key Architectural Deep Dive
 
 This project implements several production-grade engineering patterns. Below is a detailed breakdown of the core modules:
 
@@ -95,3 +95,166 @@ This project implements several production-grade engineering patterns. Below is 
    npm run dev
    ```
    Open `http://localhost:8080` in your browser.
+
+
+# 🚀 Star Poultry AI Roadmap
+
+## Level 1 – Business Intelligence Assistant
+
+**Progress:** ✅ 100%
+
+**Capability:**
+Answer core business questions related to revenue, expenses, profit, orders, and customers.
+
+**Example Questions:**
+
+* What is my total revenue?
+* How much profit have I made?
+* How many orders are completed?
+* Who is my top customer?
+
+---
+
+## Level 2 – Farm Performance Analyst
+
+**Progress:** ✅ 100%
+
+**Capability:**
+Analyze business performance, identify strengths and weaknesses, and generate recommendations.
+
+**Example Questions:**
+
+* How healthy is my business?
+* What needs attention?
+* Which month performed best?
+* What should I focus on?
+
+---
+
+## Level 3 – Customer Intelligence Engine
+
+**Progress:** ✅ 100%
+
+**Capability:**
+Understand customer behavior, rankings, segmentation, and inactivity patterns.
+
+**Example Questions:**
+
+* Who are my VIP customers?
+* Show customer leaderboard.
+* Who are my dormant customers?
+* Why is B2 a VIP customer?
+
+---
+
+## Level 4 – Smart Business Alerts
+
+**Progress:**  90%
+
+**Capability:**
+Automatically detect risks, anomalies, and operational issues without requiring manual analysis.
+
+**Example Questions:**
+
+* What alerts do I have?
+* What needs urgent attention?
+* Are there any business risks?
+* Why did I receive this alert?
+
+---
+
+## Level 5 – Natural Language Data Queries
+
+**Progress:**  75%
+
+**Capability:**
+Query business data using plain English instead of predefined commands.
+
+**Example Questions:**
+
+* Show orders between June 1 and June 15.
+* Compare this month with last month.
+* How much revenue did B2 generate?
+* Show medicine expenses.
+
+---
+
+## Level 6 – AI Business Operator
+
+**Progress:**  0%
+
+**Capability:**
+Allow the AI to perform business operations directly through chat.
+
+**Example Questions:**
+
+* Add an expense of ₹5000.
+* Create an order for B2.
+* Register a new customer.
+* Update delivery status.
+
+---
+
+## Level 7 – Expense Optimization Engine
+
+**Progress:**  35%
+
+**Capability:**
+Identify spending inefficiencies and profitability opportunities.
+
+**Example Questions:**
+
+* How can I reduce expenses?
+* Which category is hurting profit?
+* What costs should I optimize?
+* How can I improve profitability?
+
+---
+
+## Level 8 – Demand Forecasting Engine
+
+**Progress:**  0%
+
+**Capability:**
+Predict future revenue, profit, demand, and order volume.
+
+**Example Questions:**
+
+* What will next month's revenue be?
+* Forecast sales for next month.
+* Predict tray demand.
+* Expected profit next month?
+
+---
+
+## Level 9 – AI Business Advisor
+
+**Progress:**  45%
+
+**Capability:**
+Generate strategic recommendations and growth plans using business intelligence.
+
+**Example Questions:**
+
+* Act as my business consultant.
+* How should I grow?
+* Where should I invest?
+* What should be my next priority?
+
+---
+
+## Level 10 – Autonomous Poultry Copilot
+
+**Progress:**  0%
+
+**Capability:**
+Provide proactive monitoring, daily briefings, forecasting, and operational guidance.
+
+**Example Questions:**
+
+* Give me today's business briefing.
+* What should I focus on today?
+* Are there any upcoming risks?
+* What actions do you recommend?
+
+
