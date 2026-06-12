@@ -50,8 +50,8 @@ const App = () => (
               }
             />
             <Route
-            path="/forgot-password"
-            element={<ForgotPassword />}
+              path="/forgot-password"
+              element={<ForgotPassword />}
             />
             <Route
               path="/admin"
