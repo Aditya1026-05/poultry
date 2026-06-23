@@ -169,24 +169,44 @@ Customers:
 
         elif normalized_name == "orders_between_dates":
 
-            sections.append(f"""
-        DATE RANGE REPORT
+            if not isinstance(tool_data, list):
+                tool_data = [tool_data]
 
-        Start Date:
-        {tool_data.get("startDate")}
+            reports_text = ""
 
-        End Date:
-        {tool_data.get("endDate")}
+            for report in tool_data:
 
-        Total Orders:
-        {tool_data.get("totalOrders")}
+                reports_text += f"""
+                Start Date:
+                {report.get("startDate")}
 
-        Total Revenue:
-        ₹{tool_data.get("totalRevenue")}
+                End Date:
+                {report.get("endDate")}
 
-        Total Trays:
-        {tool_data.get("totalTrays")}
-        """)
+                Total Orders:
+                {report.get("totalOrders")}
+
+                Total Revenue:
+                ₹{report.get("totalRevenue")}
+
+                Total Trays:
+                {report.get("totalTrays")}
+
+                -------------------------
+                """
+
+            sections.append(
+                f"""
+                DATE RANGE ANALYSIS
+
+                Business Insight:
+                Compare revenue, orders, and trays across
+                multiple time periods to identify growth,
+                decline, and operational trends.
+
+                {reports_text}
+                """
+            )
 
         elif normalized_name == "business_health":
 
