@@ -5,6 +5,9 @@ from app.config import settings
 from app.services.function_calling import BUSINESS_TOOLS
 from app.services.function_executor import execute_function
 from app.services.context_builder import build_context
+from app.services.conversation_state import (
+    get_context,
+)
 from app.services.gemini_helper import safe_generate
 from app.services.fallback_responses import (
     build_fallback_response,
@@ -71,6 +74,26 @@ async def gemini_function_agent(message: str):
         message
     )
 
+    previous_context = get_context()
+
+    print("PREVIOUS CONTEXT:")
+    print(previous_context)
+
+    context_section = ""
+
+    if previous_context and previous_context.get("question"):
+
+        context_section = f"""
+    Previous User Question:
+    {previous_context.get("question")}
+
+    Previous Tool:
+    {previous_context.get("tool")}
+
+    Previous Business Context:
+    {previous_context.get("context", "")}
+    """
+
     last_error = None
 
     for index, client in enumerate(clients):
@@ -114,6 +137,46 @@ async def gemini_function_agent(message: str):
                 - date range analytics
 
                 Always call functions whenever business data is required.
+
+
+                Follow-Up Rules:
+
+                If Previous Conversation Context is provided,
+                use it to understand follow-up questions.
+
+                Examples:
+
+                Previous:
+                Who are my VIP customers?
+
+                Current:
+                Why?
+
+                Use the customer information from previous context.
+
+                Previous:
+                Show dormant customers.
+
+                Current:
+                How long inactive?
+
+                Use dormant customer information from previous context.
+
+                Previous:
+                How healthy is my business?
+
+                Current:
+                How can I improve it?
+
+                Use business health information from previous context.
+
+                Previous:
+                Compare June and May.
+
+                Current:
+                What caused the increase?
+
+                Use the comparison context from the previous conversation.
 
                 Rules:
 
@@ -268,7 +331,11 @@ async def gemini_function_agent(message: str):
                 - High value customers
                 - Valuable customers
 
-                User Question:
+                Previous Conversation Context:
+
+                {context_section}
+
+                Current User Question:
 
                 {message}
                 """,
@@ -298,7 +365,20 @@ async def gemini_function_agent(message: str):
     print(response.function_calls)
 
     if not response.function_calls:
-        return safe_generate(message)
+
+        fallback_prompt = f"""
+    Previous Conversation Context:
+
+    {context_section}
+
+    Current User Question:
+
+    {message}
+
+    Answer naturally using the previous context if relevant.
+    """
+
+        return safe_generate(fallback_prompt)
 
     data = {}
 
@@ -367,7 +447,7 @@ async def gemini_function_agent(message: str):
     context_text=context,
     )
     print("DATA:")
-    print(data)
+    print(data) 
     print("FINAL CONTEXT:")
     print(context)
 
