@@ -22,6 +22,7 @@ from app.services.gemini_helper import safe_generate
 from app.services.tool_executor import execute_tools
 from app.services.context_builder import build_context
 from app.services.business_agent import business_agent
+from app.services.conversation_state import get_context
 
 from app.services.followup_detector import (
     is_followup,
@@ -70,7 +71,14 @@ class GeminiProvider(AIProvider):
         print("Detected Intent:", intent)
         print("Business Question:", is_business_question(message))
 
-        if is_business_question(message):
+        previous_context = get_context()
+
+        has_context = (
+            previous_context is not None
+            and previous_context.get("question")
+        )
+
+        if is_business_question(message) or has_context:
 
             return await business_agent(message)
 

@@ -218,6 +218,18 @@ Customers:
             sections.append(f"""
         REVENUE TREND ANALYSIS
 
+        Interpretation:
+
+        If growth is positive:
+        Revenue is improving compared to the previous month.
+
+        If growth is negative:
+        Revenue has declined compared to the previous month.
+
+        Business Impact:
+        Revenue trends directly influence profitability,
+        cash flow, and business expansion opportunities.
+
         Current Month:
         {tool_data.get("currentMonth")}
 
@@ -263,6 +275,15 @@ Customers:
             sections.append(
                 f"""
         DORMANT CUSTOMER ANALYSIS
+        Business Insight:
+
+        Dormant customers represent potential lost revenue.
+
+        Re-engaging these customers can increase repeat sales
+        without acquiring entirely new customers.
+
+        Recommended Action:
+        Contact inactive customers and encourage repeat orders.
 
         Threshold Days:
         {tool_data.get("thresholdDays")}
@@ -328,16 +349,39 @@ Customers:
         CUSTOMER SEGMENTATION
 
         VIP CUSTOMERS
+        Definition:
+            Customers generating the highest revenue,
+            largest tray volume,
+            and strongest business value.
 
         {vip_text}
+        Business Insight:
+            These customers should be prioritized for retention,
+            relationship management, and volume growth.
 
         REGULAR CUSTOMERS
+        Definition:
+            Customers with moderate purchasing activity.
+
+            Potential Upgrade Candidates:
+            Customers who could become VIP customers
+            through increased order frequency,
+            larger tray purchases,
+            or stronger retention.
 
         {regular_text}
+        Business Insight:
+            These customers are potential VIP upgrade candidates.
+
 
         LOW ACTIVITY CUSTOMERS
+        Definition:
+        Customers with low order frequency or low revenue.
 
         {low_text}
+        Business Insight:
+            These customers are at risk of becoming dormant and
+            may require re-engagement campaigns.
         """
             )
 
@@ -384,6 +428,14 @@ Customers:
 
         VIP Customer:
         {tool_data.get("vipCustomer")}
+
+        Definition:
+            VIP customers generate the highest business value through
+            revenue contribution, tray volume, and purchasing activity.
+
+            Business Insight:
+            VIP customers should be prioritized for retention,
+            relationship management, and repeat business growth.
 
         TOP REVENUE CUSTOMERS
 
