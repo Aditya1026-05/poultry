@@ -585,6 +585,15 @@ async def gemini_function_agent(message: str):
     print("FINAL CONTEXT:")
     print(context)
 
+    if "create_expense_draft" in data:
+        import json
+        draft_res = data["create_expense_draft"]
+        if draft_res.get("success") and "draft" in draft_res:
+            draft_obj = draft_res["draft"]
+            if "warning" in draft_res:
+                draft_obj["warning"] = draft_res["warning"]
+            return json.dumps(draft_obj)
+
     prompt = f"""
 You are Star Poultry's Senior Business Analyst.
 
