@@ -365,3 +365,83 @@ async def get_order_records(
         )
 
     return records
+
+
+async def create_expense_draft(
+    title: str,
+    category: str,
+    amount: int,
+    expenseDate: str = None,
+    description: str = "",
+):
+    import uuid
+    from datetime import datetime
+    from app.services.action_memory import get_pending_action, save_pending_action
+
+    warning = None
+    existing = get_pending_action()
+    if existing:
+        warning = "A previous pending expense draft was replaced."
+
+    if not expenseDate:
+        expenseDate = datetime.now().date().isoformat()
+
+    draft_id = str(uuid.uuid4())
+    draft = {
+        "type": "expense_draft",
+        "draftId": draft_id,
+        "title": title,
+        "category": category,
+        "amount": amount,
+        "expenseDate": expenseDate,
+        "description": description,
+    }
+
+    save_pending_action(draft)
+
+    response = {
+        "success": True,
+        "draftId": draft_id,
+        "draft": draft,
+    }
+    if warning:
+        response["warning"] = warning
+
+    return response
+
+
+async def create_expense_confirmed(
+    title: str,
+    category: str,
+    amount: int,
+    expenseDate: str,
+    description: str = "",
+):
+    import uuid
+    from datetime import datetime, timezone
+    from app.database import expenses_collection
+    from app.services.alert_engine import generate_alerts
+
+    timestamp = datetime.now(timezone.utc).isoformat()
+    expense = {
+        "id": str(uuid.uuid4()),
+        "title": title,
+        "category": category,
+        "amount": amount,
+        "description": description,
+        "expenseDate": expenseDate,
+        "createdAt": timestamp,
+        "updatedAt": timestamp,
+    }
+    await expenses_collection.insert_one(expense)
+    
+    # Trigger real-time alert generation upon business event
+    await generate_alerts()
+    
+    # Remove MongoDB ObjectId before returning to avoid FastAPI serialization issues
+    expense.pop("_id", None)
+    
+    return {
+        "success": True,
+        "expense": expense,
+    }

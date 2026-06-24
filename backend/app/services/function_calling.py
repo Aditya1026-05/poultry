@@ -340,4 +340,39 @@ recommendations and areas needing attention.
                 },
             ),
         ),
+
+        types.FunctionDeclaration(
+            name="create_expense_draft",
+            description="""
+        Create a temporary pending draft for a new operating expense. 
+        Use this tool whenever the user wants to add, create, record, or log an expense (e.g. feed, medicine, electricity, transport, labor, maintenance, equipment, miscellaneous).
+        This tool saves the draft in-memory for user confirmation before inserting into the database.
+        """,
+            parameters=types.Schema(
+                type=types.Type.OBJECT,
+                properties={
+                    "title": types.Schema(
+                        type=types.Type.STRING,
+                        description="Short title or description of the expense (e.g., 'Feed Purchase', 'Electricity Bill May')"
+                    ),
+                    "category": types.Schema(
+                        type=types.Type.STRING,
+                        description="The category of the expense. Must be exactly one of: Feed, Medicine, Electricity, Transport, Labor, Maintenance, Equipment, Miscellaneous"
+                    ),
+                    "amount": types.Schema(
+                        type=types.Type.INTEGER,
+                        description="The expense amount in Indian Rupees (₹)"
+                    ),
+                    "expenseDate": types.Schema(
+                        type=types.Type.STRING,
+                        description="The date of the expense in YYYY-MM-DD format. Defaults to current date if not mentioned."
+                    ),
+                    "description": types.Schema(
+                        type=types.Type.STRING,
+                        description="Optional detailed description of the expense"
+                    )
+                },
+                required=["title", "category", "amount"]
+            )
+        ),
 ]

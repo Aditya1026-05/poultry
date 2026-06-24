@@ -10,6 +10,7 @@ from app.services.ai_tools import (
     get_customer_details,
     get_orders_between_dates,
     get_order_records,
+    create_expense_draft,
 )
 from app.services.business_health import (
     get_business_health
@@ -44,4 +45,5 @@ FUNCTION_REGISTRY = {
     "get_customer_rankings": get_customer_rankings,
     "get_dormant_customers": get_dormant_customers,
     "get_customer_segments": get_customer_segments,
+    "create_expense_draft": create_expense_draft,
 }

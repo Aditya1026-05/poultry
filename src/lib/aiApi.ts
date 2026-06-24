@@ -17,3 +17,35 @@ export async function sendMessage(message: string) {
 
   return response.json();
 }
+
+export async function confirmAction() {
+  const response = await fetch(`${API_BASE}/ai/confirm-action`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.detail || "Failed to confirm action");
+  }
+
+  return response.json();
+}
+
+export async function cancelAction() {
+  const response = await fetch(`${API_BASE}/ai/cancel-action`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.detail || "Failed to cancel action");
+  }
+
+  return response.json();
+}
