@@ -78,7 +78,8 @@
   }
 
   html {
-    scroll-behavior: smooth;
+  scroll-behavior: smooth;
+  font-size: 13px;
   }
 
   body {
