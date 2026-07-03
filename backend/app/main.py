@@ -9,12 +9,13 @@ from app.routes.profit import router as profit_router
 from app.routes.settings import router as settings_router
 from app.routes.ai import router as ai_router
 from app.routes.alerts import router as alerts_router
+from app.config import settings
 
 app = FastAPI(title="Star Poultry Farm API")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:8080"],
+    allow_origins=[settings.frontend_url],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
