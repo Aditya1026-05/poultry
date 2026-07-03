@@ -149,7 +149,7 @@ Understand customer behavior, rankings, segmentation, and inactivity patterns.
 
 ## Level 4 – Smart Business Alerts
 
-**Progress:**  90%
+**Progress:**  ✅ 100%
 
 **Capability:**
 Automatically detect risks, anomalies, and operational issues without requiring manual analysis.
@@ -165,7 +165,7 @@ Automatically detect risks, anomalies, and operational issues without requiring 
 
 ## Level 5 – Natural Language Data Queries
 
-**Progress:**  75%
+**Progress:**  ✅ 100%
 
 **Capability:**
 Query business data using plain English instead of predefined commands.
@@ -181,7 +181,7 @@ Query business data using plain English instead of predefined commands.
 
 ## Level 6 – AI Business Operator
 
-**Progress:**  0%
+**Progress:**  30%
 
 **Capability:**
 Allow the AI to perform business operations directly through chat.
