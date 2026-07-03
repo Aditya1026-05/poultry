@@ -163,13 +163,36 @@ export default function Auth() {
                 </Button>
                 <p className="text-xs text-muted-foreground text-center pt-2">
                   <button
-  type="button"
-  className="hover:text-foreground transition-colors"
-  onClick={() => navigate("/forgot-password")}
->
-  Forgot password?
-</button>
+                    type="button"
+                    className="hover:text-foreground transition-colors"
+                    onClick={() => navigate("/forgot-password")}
+                  >
+                    Forgot password?
+                  </button>
                 </p>
+                
+                <div className="mt-6 p-4 rounded-2xl glass text-muted-foreground text-xs space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="font-semibold text-foreground">Recruiter Admin Credentials</span>
+                    <button
+                      type="button"
+                      onClick={() => setLoginForm({ email: "admin@starpoultry.com", password: "admin123" })}
+                      className="px-2 py-1 text-[10px] font-medium bg-white/5 border border-white/10 hover:bg-white/10 text-foreground rounded-lg transition-colors cursor-pointer"
+                    >
+                      Auto-fill
+                    </button>
+                  </div>
+                  <div className="space-y-1.5">
+                    <div className="flex justify-between items-center bg-black/20 px-3 py-1.5 rounded-xl border border-white/5">
+                      <span>Email:</span>
+                      <span className="font-mono text-foreground select-all">admin@starpoultry.com</span>
+                    </div>
+                    <div className="flex justify-between items-center bg-black/20 px-3 py-1.5 rounded-xl border border-white/5">
+                      <span>Password:</span>
+                      <span className="font-mono text-foreground select-all">admin123</span>
+                    </div>
+                  </div>
+                </div>
               </form>
             </TabsContent>
 
