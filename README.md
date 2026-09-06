@@ -294,7 +294,7 @@ Merging these into one `POST /ai/chat` stat would mask the performance character
 - AI copilot test: [`backend/locustfile.py`](backend/locustfile.py)
 - Order creation test: [`backend/locustfile_orders.py`](backend/locustfile_orders.py)
 - Cleanup scripts: [`backend/cleanup_load_test.py`](backend/cleanup_load_test.py), [`backend/cleanup_orders_load_test.py`](backend/cleanup_orders_load_test.py)
-- Raw CSV results: `backend/load_test_tier1v2_results_stats.csv`, `backend/orders_tier*_stats.csv`, `backend/orders_optimized_tier*_stats.csv`
+- Raw CSV results (generated locally, gitignored): `backend/*_stats.csv`, `backend/*_stats_history.csv`
 
 ---
 

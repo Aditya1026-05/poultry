@@ -1,6 +1,0 @@
-Method,Name,Error,Occurrences,First Seen,Last Seen
-POST,POST /api/orders,HTTPError('429 Client Error: Too Many Requests for url: POST /api/orders'),229,2026-09-06T12:25:54Z,2026-09-06T12:26:26Z
-GET,GET /api/orders/mine,HTTPError('429 Client Error: Too Many Requests for url: GET /api/orders/mine'),112,2026-09-06T12:25:54Z,2026-09-06T12:26:24Z
-POST,POST /api/auth/signup,HTTPError('503 Server Error: Service Unavailable for url: POST /api/auth/signup'),4,2026-09-06T12:25:50Z,2026-09-06T12:25:50Z
-GET,GET /api/orders/mine,HTTPError('503 Server Error: Service Unavailable for url: GET /api/orders/mine'),2,2026-09-06T12:25:53Z,2026-09-06T12:26:00Z
-POST,POST /api/orders,HTTPError('503 Server Error: Service Unavailable for url: POST /api/orders'),5,2026-09-06T12:25:50Z,2026-09-06T12:26:04Z

@@ -1,3 +1,0 @@
-Method,Name,Error,Occurrences,First Seen,Last Seen
-POST,POST /api/auth/signup,HTTPError('429 Client Error: Too Many Requests for url: POST /api/auth/signup'),46,2026-09-06T05:41:48Z,2026-09-06T05:41:57Z
-GET,[warmup] /api/health,HTTPError('429 Client Error: Too Many Requests for url: [warmup] /api/health'),49,2026-09-06T05:41:48Z,2026-09-06T05:41:57Z
