@@ -1,7 +1,0 @@
-Method,Name,Error,Occurrences,First Seen,Last Seen
-POST,POST /api/orders,CatchResponseError('Status 503: '),2,2026-09-05T20:02:38Z,2026-09-05T20:02:40Z
-GET,GET /api/orders/mine,HTTPError('429 Client Error: Too Many Requests for url: GET /api/orders/mine'),8,2026-09-05T20:02:42Z,2026-09-05T20:02:47Z
-GET,GET /api/orders,HTTPError('503 Server Error: Service Unavailable for url: GET /api/orders'),6,2026-09-05T20:02:38Z,2026-09-05T20:02:43Z
-POST,POST /api/orders,"CatchResponseError('Status 429: <!DOCTYPE html><html lang=""en-US""><head><title>Just a moment...</title><meta http-equiv=""Content-Type"" content=""text/htm')",9,2026-09-05T20:02:39Z,2026-09-05T20:02:47Z
-GET,GET /api/orders/mine,HTTPError('503 Server Error: Service Unavailable for url: GET /api/orders/mine'),2,2026-09-05T20:02:36Z,2026-09-05T20:02:41Z
-GET,GET /api/orders,HTTPError('429 Client Error: Too Many Requests for url: GET /api/orders'),21,2026-09-05T20:02:39Z,2026-09-05T20:02:48Z
