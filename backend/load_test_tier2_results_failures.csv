@@ -1,0 +1,14 @@
+Method,Name,Error,Occurrences,First Seen,Last Seen
+POST,POST /api/expenses,HTTPError('502 Server Error: Bad Gateway for url: POST /api/expenses'),2,2026-09-05T18:59:05Z,2026-09-05T18:59:05Z
+POST,POST /ai/chat,"CatchResponseError('Rate limited (429): <!DOCTYPE html><html lang=""en-US""><head><title>Just a moment...</title><meta http-equiv=""Content-Type"" content=""text/html; charset=UTF-8""><meta http-equiv=""X-UA-Compatible"" content=""IE=Edge""><meta nam')",389,2026-09-05T18:58:42Z,2026-09-05T18:59:14Z
+GET,GET /api/expenses/kpis,HTTPError('429 Client Error: Too Many Requests for url: GET /api/expenses/kpis'),6,2026-09-05T18:58:52Z,2026-09-05T18:59:11Z
+POST,POST /api/expenses,HTTPError('503 Server Error: Service Unavailable for url: POST /api/expenses'),1,2026-09-05T18:58:49Z,2026-09-05T18:58:49Z
+POST,POST /api/auth/login,HTTPError('429 Client Error: Too Many Requests for url: POST /api/auth/login'),4,2026-09-05T18:58:42Z,2026-09-05T18:58:42Z
+GET,GET /api/expenses,HTTPError('503 Server Error: Service Unavailable for url: GET /api/expenses'),1,2026-09-05T18:58:51Z,2026-09-05T18:58:51Z
+GET,GET /api/expenses/kpis,HTTPError('503 Server Error: Service Unavailable for url: GET /api/expenses/kpis'),1,2026-09-05T18:59:12Z,2026-09-05T18:59:12Z
+POST,POST /ai/chat,CatchResponseError('HTTP 503: '),13,2026-09-05T18:58:37Z,2026-09-05T18:59:13Z
+POST,POST /api/auth/login,HTTPError('503 Server Error: Service Unavailable for url: POST /api/auth/login'),1,2026-09-05T18:58:42Z,2026-09-05T18:58:42Z
+POST,POST /api/auth/login,HTTPError('502 Server Error: Bad Gateway for url: POST /api/auth/login'),4,2026-09-05T18:59:05Z,2026-09-05T18:59:05Z
+POST,POST /ai/chat,CatchResponseError('HTTP 502: '),6,2026-09-05T18:59:05Z,2026-09-05T18:59:05Z
+GET,GET /api/expenses,HTTPError('429 Client Error: Too Many Requests for url: GET /api/expenses'),15,2026-09-05T18:58:53Z,2026-09-05T18:59:14Z
+POST,POST /api/expenses,HTTPError('429 Client Error: Too Many Requests for url: POST /api/expenses'),20,2026-09-05T18:58:51Z,2026-09-05T18:59:14Z
