@@ -1,7 +1,8 @@
 import uuid
 from datetime import datetime, timezone
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from fastapi import Query
+from app.services.alert_engine import generate_alerts
 from app.database import orders_collection
 from app.routes.settings import get_or_create_settings
 from app.schemas.orders import CreateOrderRequest, OrderResponse, UpdateOrderRequest
@@ -65,7 +66,7 @@ def clean_order(order: dict) -> dict:
 
 
 @router.post("", response_model=OrderResponse)
-async def create_order(payload: CreateOrderRequest, user=Depends(get_current_user)):
+async def create_order(payload: CreateOrderRequest, user=Depends(get_current_user), background_tasks: BackgroundTasks = BackgroundTasks()):
     settings = await get_or_create_settings()
     price_per_tray = get_price_for_quantity(payload.quantity, settings)
     total_amount = price_per_tray * payload.quantity
@@ -96,9 +97,8 @@ async def create_order(payload: CreateOrderRequest, user=Depends(get_current_use
     }
 
     await orders_collection.insert_one(order)
-    # Trigger real-time alert generation upon business event
-    from app.services.alert_engine import generate_alerts
-    await generate_alerts()
+    # Run alert generation in background — doesn't block the response
+    background_tasks.add_task(generate_alerts)
     return clean_order(order)
 
 
@@ -300,7 +300,7 @@ async def export_revenue_csv(
     )
 
 @router.patch("/{order_id}", response_model=OrderResponse)
-async def update_order(order_id: str, payload: UpdateOrderRequest, _admin=Depends(require_admin)):
+async def update_order(order_id: str, payload: UpdateOrderRequest, _admin=Depends(require_admin), background_tasks: BackgroundTasks = BackgroundTasks()):
     order = await orders_collection.find_one({"id": order_id})
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
@@ -311,8 +311,7 @@ async def update_order(order_id: str, payload: UpdateOrderRequest, _admin=Depend
     patch["updatedAt"] = now_iso()
 
     await orders_collection.update_one({"id": order_id}, {"$set": patch})
-    # Trigger real-time alert generation upon business event
-    from app.services.alert_engine import generate_alerts
-    await generate_alerts()
+    # Run alert generation in background — doesn't block the response
+    background_tasks.add_task(generate_alerts)
     updated = await orders_collection.find_one({"id": order_id})
     return clean_order(updated)
