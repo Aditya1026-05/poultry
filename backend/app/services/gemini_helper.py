@@ -1,6 +1,8 @@
 from google import genai
+import time
 
 from app.config import settings
+from app.services.timing import add_gemini_time
 
 
 clients = []
@@ -37,10 +39,16 @@ def safe_generate(prompt: str) -> str:
 
             print(f"Trying Gemini Key #{index + 1}")
 
+            t0 = time.perf_counter()
+
             response = client.models.generate_content(
                 model="gemini-2.5-flash",
                 contents=prompt,
             )
+
+            duration_ms = (time.perf_counter() - t0) * 1000
+            add_gemini_time(duration_ms)
+            print(f"gemini_call_duration_ms={duration_ms:.1f}")
 
             return response.text
 

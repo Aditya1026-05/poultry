@@ -1,5 +1,6 @@
 from google import genai
 from google.genai import types
+import time
 
 from app.config import settings
 from app.services.function_calling import BUSINESS_TOOLS
@@ -103,6 +104,8 @@ async def gemini_function_agent(message: str):
             print(
                 f"Function Agent Key #{index + 1}"
             )
+
+            t0 = time.perf_counter()
 
             response = client.models.generate_content(
                 model="gemini-2.5-flash",
@@ -478,6 +481,11 @@ async def gemini_function_agent(message: str):
                     tools=[tool]
                 )
             )
+            duration_ms = (time.perf_counter() - t0) * 1000
+            from app.services.timing import add_gemini_time
+            add_gemini_time(duration_ms)
+            print(f"gemini_function_call_duration_ms={duration_ms:.1f}")
+
             print("RAW RESPONSE:")
             print(response.text)
 
