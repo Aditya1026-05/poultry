@@ -33,7 +33,3 @@ venv/
 *.njsproj
 *.sln
 *.sw?
-
-# Load test output
-backend/*.csv
-backend/run_order_loadtest*.sh
