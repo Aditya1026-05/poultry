@@ -6,37 +6,37 @@ Deployed in production on **Amazon Web Services (AWS EC2)** with containerized m
 
 ---
 
-## 📑 Table of Contents
+## Table of Contents
 
-1. [System Architecture](#-system-architecture)
-2. [Technology Stack](#-technology-stack)
-3. [Core Engineering Modules](#-core-engineering-modules)
+1. [System Architecture](#system-architecture)
+2. [Technology Stack](#technology-stack)
+3. [Core Engineering Modules](#core-engineering-modules)
    - [Authentication & Role-Based Access Control](#1-authentication--role-based-access-control-rbac)
    - [Gemini Function-Calling AI Copilot](#2-gemini-function-calling-ai-copilot)
    - [Event-Driven Alert Engine](#3-event-driven-alert-engine)
    - [Database Architecture & Indexes](#4-database-architecture--indexes)
-4. [Cloud Infrastructure & Production Hardening](#-cloud-infrastructure--production-hardening)
-5. [CI/CD & GitOps Pipeline](#-cicd--gitops-pipeline)
-6. [Repository & Branching Strategy](#-repository--branching-strategy)
-7. [Environment Variables Reference](#-environment-variables-reference)
-8. [Local Development Setup](#-local-development-setup)
-9. [Production Operations & Runbook](#-production-operations--runbook)
-10. [AI Capabilities & Roadmap](#-ai-capabilities--roadmap)
+4. [Cloud Infrastructure & Production Hardening](#cloud-infrastructure--production-hardening)
+5. [CI/CD & GitOps Pipeline](#cicd--gitops-pipeline)
+6. [Repository & Branching Strategy](#repository--branching-strategy)
+7. [Environment Variables Reference](#environment-variables-reference)
+8. [Local Development Setup](#local-development-setup)
+9. [Production Operations & Runbook](#production-operations--runbook)
+10. [AI Capabilities & Roadmap](#ai-capabilities--roadmap)
 
 ---
 
-## 🏛️ System Architecture
+## System Architecture
 
 The application runs in an isolated containerized environment on an AWS EC2 instance. All external HTTP traffic enters through an Nginx reverse proxy, which serves the compiled React single-page application (SPA) and forwards API requests internally across a private Docker network.
 
 ```mermaid
 flowchart TD
-    subgraph Internet ["🌐 Public Internet"]
+    subgraph Internet ["Public Internet"]
         User["Client Browser"]
         Admin["Farm Administrator"]
     end
 
-    subgraph AWS_EC2 ["☁️ AWS EC2 (Ubuntu 24.04 LTS | t3.micro)"]
+    subgraph AWS_EC2 ["AWS EC2 (Ubuntu 24.04 LTS | t3.micro)"]
         subgraph Host_Level ["Host Environment (Port 80 / 443)"]
             Swap["2 GB Linux Swapfile (/swapfile)"]
             EIP["Elastic IP: 15.207.133.217"]
@@ -68,7 +68,7 @@ flowchart TD
 
 ---
 
-## 🛠️ Technology Stack
+## Technology Stack
 
 | Layer | Technologies | Purpose |
 | :--- | :--- | :--- |
@@ -87,7 +87,7 @@ flowchart TD
 
 ---
 
-## 🧠 Core Engineering Modules
+## Core Engineering Modules
 
 ### 1. Authentication & Role-Based Access Control (RBAC)
 
@@ -161,7 +161,7 @@ await expenses_collection.create_index([("category", 1), ("expenseDate", -1)])
 
 ---
 
-## 🛡️ Cloud Infrastructure & Production Hardening
+## Cloud Infrastructure & Production Hardening
 
 Deploying on an AWS Free Tier `t3.micro` instance (1 GB RAM, 2 vCPUs) requires deliberate systems engineering:
 
@@ -173,7 +173,7 @@ Deploying on an AWS Free Tier `t3.micro` instance (1 GB RAM, 2 vCPUs) requires d
      ```dockerfile
      ENV NODE_OPTIONS="--max-old-space-size=1536"
      ```
-     This allows Vite to utilize swap during bundling without triggering `FATAL ERROR: JavaScript heap out of memory`.
+     This allows Vite to utilize swap during bundling without triggering memory allocation panics.
 3. **Loopback Isolation**:
    - Backend container port is mapped strictly to `127.0.0.1:8000:8000`.
    - External internet access cannot bypass Nginx or reach Uvicorn directly on port 8000.
@@ -184,7 +184,7 @@ Deploying on an AWS Free Tier `t3.micro` instance (1 GB RAM, 2 vCPUs) requires d
 
 ---
 
-## 🚀 CI/CD & GitOps Pipeline
+## CI/CD & GitOps Pipeline
 
 Every push to the production branch triggers an automated GitHub Actions pipeline ([`.github/workflows/ci.yml`](file:///Users/apple/Documents/poultry/.github/workflows/ci.yml)):
 
@@ -207,12 +207,12 @@ flowchart TD
     Gate -- Yes --> Deploy["Job 4: Deploy to AWS EC2\n• SSH into EC2 (appleboy/ssh-action)\n• git pull origin aws-deployment\n• docker compose up -d --build"]
     
     Deploy --> Health["Automated Healthcheck\ncurl http://15.207.133.217/api/health"]
-    Health --> Live["Production Live & Healthy (✓)"]
+    Health --> Live["Production Live & Healthy"]
 ```
 
 ---
 
-## 🌿 Repository & Branching Strategy
+## Repository & Branching Strategy
 
 | Branch | Deployment Target | Role |
 | :--- | :--- | :--- |
@@ -222,7 +222,7 @@ flowchart TD
 
 ---
 
-## 🔐 Environment Variables Reference
+## Environment Variables Reference
 
 ### Backend Configuration (`backend/.env`)
 
@@ -249,7 +249,7 @@ flowchart TD
 
 ---
 
-## 💻 Local Development Setup
+## Local Development Setup
 
 ### Option A: Running with Docker Compose (Recommended)
 
@@ -297,7 +297,7 @@ npm run dev
 
 ---
 
-## 🛠️ Production Operations & Runbook
+## Production Operations & Runbook
 
 For maintainers managing the live AWS EC2 server (`15.207.133.217`):
 
@@ -340,25 +340,25 @@ Confirm `Swap:` displays `2.0Gi` total with adequate free capacity.
 
 ---
 
-## 📈 AI Capabilities & Roadmap
+## AI Capabilities & Roadmap
 
 The AI copilot roadmap tracks features from simple KPI reporting to autonomous farm optimization:
 
 | Tier | Capability | Status | Sample Prompts |
 | :---: | :--- | :---: | :--- |
-| **Level 1** | **Business Intelligence Assistant** | ✅ 100% | *"What is my total revenue this month?"*, *"How much profit have I made?"* |
-| **Level 2** | **Farm Performance Analyst** | ✅ 100% | *"How healthy is my business?"*, *"Which month had the best operating margins?"* |
-| **Level 3** | **Customer Intelligence Engine** | ✅ 100% | *"Who are my VIP customers?"*, *"Show dormant wholesale buyers"* |
-| **Level 4** | **Smart Business Alerts** | ✅ 100% | *"What alerts need urgent attention?"*, *"Why was this warning generated?"* |
-| **Level 5** | **Natural Language Queries** | ✅ 100% | *"Show egg orders between Aug 1 and Aug 15"*, *"Break down medicine expenses"* |
-| **Level 6** | **AI Business Operator** | 🔄 30% | *"Add an expense of ₹5000 for feed"*, *"Create an order for Customer B2"* |
-| **Level 7** | **Expense Optimization** | 🔄 35% | *"How can I reduce feed expenses?"*, *"Which cost category is hurting margins?"* |
-| **Level 8** | **Demand Forecasting** | 📅 Planned | *"Forecast tray demand for next month"*, *"Project expected Q4 revenue"* |
-| **Level 9** | **Strategic Advisor** | 🔄 45% | *"Act as my business consultant. Where should I invest profits?"* |
-| **Level 10** | **Autonomous Poultry Copilot** | 📅 Planned | Proactive daily briefing, anomaly detection, and automated inventory reordering |
+| **Level 1** | **Business Intelligence Assistant** | 100% (Complete) | *"What is my total revenue this month?"*, *"How much profit have I made?"* |
+| **Level 2** | **Farm Performance Analyst** | 100% (Complete) | *"How healthy is my business?"*, *"Which month had the best operating margins?"* |
+| **Level 3** | **Customer Intelligence Engine** | 100% (Complete) | *"Who are my VIP customers?"*, *"Show dormant wholesale buyers"* |
+| **Level 4** | **Smart Business Alerts** | 100% (Complete) | *"What alerts need urgent attention?"*, *"Why was this warning generated?"* |
+| **Level 5** | **Natural Language Queries** | 100% (Complete) | *"Show egg orders between Aug 1 and Aug 15"*, *"Break down medicine expenses"* |
+| **Level 6** | **AI Business Operator** | 30% (In Progress) | *"Add an expense of ₹5000 for feed"*, *"Create an order for Customer B2"* |
+| **Level 7** | **Expense Optimization** | 35% (In Progress) | *"How can I reduce feed expenses?"*, *"Which cost category is hurting margins?"* |
+| **Level 8** | **Demand Forecasting** | Planned | *"Forecast tray demand for next month"*, *"Project expected Q4 revenue"* |
+| **Level 9** | **Strategic Advisor** | 45% (In Progress) | *"Act as my business consultant. Where should I invest profits?"* |
+| **Level 10** | **Autonomous Poultry Copilot** | Planned | Proactive daily briefing, anomaly detection, and automated inventory reordering |
 
 ---
 
-## 📄 License & Attribution
+## License & Attribution
 
 Developed for **Star Poultry Farm Management**. All rights reserved.
