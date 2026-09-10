@@ -7,7 +7,8 @@ WORKDIR /app
 
 # Ensure production builds compile with relative /api endpoints
 ARG VITE_API_URL=/api
-ENV VITE_API_URL=$VITE_API_URL
+ENV VITE_API_URL=$VITE_API_URL \
+    NODE_OPTIONS="--max-old-space-size=1536"
 
 # Install dependencies using package-lock.json for reproducible builds
 COPY package.json package-lock.json ./
