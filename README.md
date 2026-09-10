@@ -190,9 +190,9 @@ Every push to the production branch triggers an automated GitHub Actions pipelin
 
 ```mermaid
 flowchart TD
-    Push["git push origin aws-deployment"] --> CI["GitHub Actions Workflow"]
+    Push["git push / merge to aws-deployment"] --> CI["GitHub Actions Workflow"]
     
-    subgraph Parallel_Checks ["Phase 1: Verification Checks"]
+    subgraph Parallel_Checks ["Phase 1: Automated Verification (CI)"]
         Job1["Frontend Check\n• Node 20 / npm ci\n• Vitest Unit Tests\n• Vite Production Build"]
         Job2["Backend Check\n• Python 3.11 / pip install\n• Bytecode compileall\n• FastAPI Boot & Route Check"]
     end
@@ -204,10 +204,53 @@ flowchart TD
 
     Job3 --> Gate{"All Checks Pass?"}
     Gate -- No --> Halt["Build Fails: Production Untouched"]
-    Gate -- Yes --> Deploy["Job 4: Deploy to AWS EC2\n• SSH into EC2 (appleboy/ssh-action)\n• git pull origin aws-deployment\n• docker compose up -d --build"]
+    Gate -- Yes --> Deploy["Job 4: Deploy to AWS EC2 (CD)\n• SSH into EC2 (appleboy/ssh-action)\n• git fetch & reset --hard\n• docker compose up -d --build"]
     
     Deploy --> Health["Automated Healthcheck\ncurl http://15.207.133.217/api/health"]
     Health --> Live["Production Live & Healthy"]
+```
+
+### Pipeline Jobs Breakdown
+
+1. **Job 1: Frontend Verification**:
+   - Executes inside `frontend/` directory.
+   - Installs dependencies reproducibly with `npm ci` leveraging GitHub Actions caching.
+   - Runs unit tests via Vitest (`npm test`).
+   - Compiles production static assets via `npm run build` with `VITE_API_URL=/api`.
+2. **Job 2: Backend Verification**:
+   - Executes inside `backend/` directory.
+   - Sets up Python 3.11 with cached pip dependencies from `requirements.txt`.
+   - Runs syntax and bytecode compilation verification (`python -m compileall app`).
+   - Boots the FastAPI application with mock environment variables to verify all 7 routers and Pydantic models initialize without runtime import errors.
+3. **Job 3: Docker Build Verification**:
+   - Sets up Docker Buildx with GitHub Actions caching (`type=gha`).
+   - Builds both `backend/Dockerfile` and `frontend/Dockerfile` images to guarantee container compile correctness before any server contact.
+4. **Job 4: Automated Continuous Deployment (CD)**:
+   - Triggered strictly on direct pushes and merged pull requests to `aws-deployment` (never on unmerged PRs).
+   - Establishes an encrypted SSH connection to the AWS EC2 instance (`15.207.133.217`) using repository secrets (`EC2_HOST`, `EC2_USER`, `EC2_SSH_KEY`).
+   - Fetches latest commits and synchronizes working tree via `git fetch && git reset --hard origin/aws-deployment`.
+   - Executes `docker compose up -d --build` to rebuild and hot-swap running containers with zero downtime.
+   - Executes an automated curl health check against `http://15.207.133.217/api/health`. The workflow only turns green if the database reports `{"status":"ok","database":"connected"}`.
+
+### Developer Workflow: From Local Feature to Production
+
+```text
+1. Develop on dev branch:
+   git checkout aws-deployment-dev
+   # write code and test locally
+
+2. Commit and push:
+   git add .
+   git commit -m "feat: your feature description"
+   git push origin aws-deployment-dev
+
+3. Open a Pull Request:
+   Open a PR on GitHub from aws-deployment-dev into aws-deployment.
+   GitHub Actions automatically runs Jobs 1, 2, and 3 to verify code quality.
+
+4. Merge Pull Request:
+   Click "Merge pull request" on GitHub.
+   Job 4 (CD) triggers automatically, deploys to AWS EC2, and updates the live site in under 30 seconds!
 ```
 
 ---
