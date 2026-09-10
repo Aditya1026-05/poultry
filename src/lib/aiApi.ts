@@ -1,13 +1,22 @@
 const API_BASE =
     import.meta.env.VITE_API_URL?.replace("/api", "") ??
     "http://localhost:8000";
+const TOKEN_KEY = "Star_token";
+
+const getToken = () => localStorage.getItem(TOKEN_KEY);
+
+const getAuthHeaders = (): Record<string, string> => {
+  const token = getToken();
+  return {
+    "Content-Type": "application/json",
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
+};
 
 export async function sendMessage(message: string) {
   const response = await fetch(`${API_BASE}/ai/chat`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: getAuthHeaders(),
     body: JSON.stringify({
       message,
     }),
@@ -23,9 +32,7 @@ export async function sendMessage(message: string) {
 export async function confirmAction() {
   const response = await fetch(`${API_BASE}/ai/confirm-action`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: getAuthHeaders(),
   });
 
   if (!response.ok) {
@@ -39,9 +46,7 @@ export async function confirmAction() {
 export async function cancelAction() {
   const response = await fetch(`${API_BASE}/ai/cancel-action`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: getAuthHeaders(),
   });
 
   if (!response.ok) {
