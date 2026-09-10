@@ -1,0 +1,24 @@
+# Virtual environments
+.venv/
+venv/
+ENV/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Environment files (CRITICAL: Never bake secrets into images)
+.env
+.env.*
+!.env.example
+
+# Git and OS artifacts
+.git/
+.gitignore
+.DS_Store
+
+# Test artifacts and logs
+*.log
+.pytest_cache/
