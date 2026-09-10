@@ -1,260 +1,364 @@
 # Star Poultry Farm AI & Business Intelligence Platform
 
-An enterprise SaaS farm management and business intelligence platform designed for **Star Poultry** to manage operating expenses, streamline bulk tray ordering, track profitability metrics, and deliver automated real-time business health alerts.
+An enterprise SaaS farm management, financial intelligence, and automated operations platform built for wholesale egg and poultry distribution. The system manages daily tray orders, tracks operating expenses, calculates net profit margins, monitors customer lifetime value, and delivers an intelligent business copilot powered by Google Gemini Function Calling.
+
+Deployed in production on **Amazon Web Services (AWS EC2)** with containerized multi-stage Docker builds, an Nginx reverse proxy, automated GitHub Actions CI/CD, and MongoDB Atlas.
 
 ---
 
-## 🛠️ Tech Stack
+## 📑 Table of Contents
 
-*   **Frontend:** React.js, TypeScript, Tailwind CSS, Radix UI (Shadcn), Recharts, Framer Motion, TanStack Query, React Router.
-*   **Backend:** FastAPI (Python), Python asyncio, Motor (Async MongoDB Driver), Pydantic (data validation), Python-Jose (JWT authentication).
-*   **Database:** MongoDB.
-*   **AI Integration:** Google Gemini API (utilizing native tool-calling/function-calling schemas, fallback chain routing, and conversational memory).
-
----
-
-## 🚀 Key Architectural Deep Dive
-
-This project implements several production-grade engineering patterns. Below is a detailed breakdown of the core modules:
-
-### 1. Asynchronous I/O Database Pipelines
-*   **Non-Blocking Event Loop:** Built with **FastAPI** and **Python's asyncio** to avoid blocking the main server thread during expensive network and database operations.
-*   **Motor Driver Integration:** Replaced blocking database drivers with **Motor** (the async driver for MongoDB) to perform concurrent operations (e.g. fetching total revenue and expenses simultaneously).
-*   **Async Stream Cursors:** Implemented asynchronous generators (`async for order in cursor`) to stream large operational datasets without loading massive arrays into server memory.
-
-### 2. Event-Driven Alert Management System
-*   **Automated operational audits:** Tracks business thresholds inside `alert_engine.py` triggered directly by modifying events (order submission, updates, expense deletions).
-*   **Severity & Type Classification:** Segregates business events into severity levels (`critical`, `warning`, `info`) for issues such as health score drop (<40), negative profit, high customer dependency, customer dormancy, and expense spikes (>40%).
-*   **Deduplication & Auto-Resolution:** Automatically suppresses duplicate unresolved alerts and marks active alerts as `isResolved = True` when the underlying database metrics recover.
-*   **Flexible Metadata & Dismissals:** Saves structured context in an open `metadata` sub-object and handles `isDismissed = True` flags to hide critical alerts from login popups while keeping them in the system log.
-
-### 3. Tool-Calling AI Copilot
-*   **Gemini Function Calling:** Registers Python business helper routines as native LLM tools, allowing the agent to automatically fetch real-time reports, rank VIP customers, and trace expense categories in response to natural language queries.
-*   **Semantic Intent Router:** Classifies queries (Overview, Trend Analysis, Chat) before invoking the LLM, reducing latency and optimizing API token consumption.
-*   **Stateful Conversation Memory:** Tracks query histories and implements universal follow-up context resolution, permitting seamless conversational updates (e.g., asking *"Show dormant customers"* followed by *"Why are they inactive?"*).
-
-### 4. Enterprise Security & Access Control
-*   **JWT Sessions:** Implements secure JWT authentication with custom FastAPI dependency injections.
-*   **Role-Based Access Control (RBAC):** Segregates Admin privileges (accessing Profit dashboards, expense charts, AI assistants, and system settings) from Customer accounts (placing orders, uploading payment receipts, and tracking order delivery status).
+1. [System Architecture](#-system-architecture)
+2. [Technology Stack](#-technology-stack)
+3. [Core Engineering Modules](#-core-engineering-modules)
+   - [Authentication & Role-Based Access Control](#1-authentication--role-based-access-control-rbac)
+   - [Gemini Function-Calling AI Copilot](#2-gemini-function-calling-ai-copilot)
+   - [Event-Driven Alert Engine](#3-event-driven-alert-engine)
+   - [Database Architecture & Indexes](#4-database-architecture--indexes)
+4. [Cloud Infrastructure & Production Hardening](#-cloud-infrastructure--production-hardening)
+5. [CI/CD & GitOps Pipeline](#-cicd--gitops-pipeline)
+6. [Repository & Branching Strategy](#-repository--branching-strategy)
+7. [Environment Variables Reference](#-environment-variables-reference)
+8. [Local Development Setup](#-local-development-setup)
+9. [Production Operations & Runbook](#-production-operations--runbook)
+10. [AI Capabilities & Roadmap](#-ai-capabilities--roadmap)
 
 ---
 
-## 📦 Project Directory Structure
+## 🏛️ System Architecture
 
-```text
-├── backend/                  # FastAPI Backend
-│   ├── app/
-│   │   ├── routes/           # REST endpoints (auth, orders, expenses, profit, alerts, ai)
-│   │   ├── services/         # Business services (alert_engine, business_health, intent_router)
-│   │   ├── schemas/          # Pydantic schemas
-│   │   ├── database.py       # MongoDB Async connection configurations
-│   │   ├── security.py       # JWT session helper & dependencies
-│   │   └── main.py           # FastAPI entrypoint
-│   └── test_alerts.py        # Integration test script for the alert engine
-│
-├── src/                      # React Frontend
-│   ├── components/           # UI and Layout components (AppHeader, Navbar)
-│   ├── context/              # Authentication context providers
-│   ├── lib/                  # API clients (financeApi, alertsApi)
-│   ├── pages/                # Views (Admin, Dashboard, Alerts Center, AIAssistant)
-│   └── App.tsx               # Frontend router & layout configuration
+The application runs in an isolated containerized environment on an AWS EC2 instance. All external HTTP traffic enters through an Nginx reverse proxy, which serves the compiled React single-page application (SPA) and forwards API requests internally across a private Docker network.
+
+```mermaid
+flowchart TD
+    subgraph Internet ["🌐 Public Internet"]
+        User["Client Browser"]
+        Admin["Farm Administrator"]
+    end
+
+    subgraph AWS_EC2 ["☁️ AWS EC2 (Ubuntu 24.04 LTS | t3.micro)"]
+        subgraph Host_Level ["Host Environment (Port 80 / 443)"]
+            Swap["2 GB Linux Swapfile (/swapfile)"]
+            EIP["Elastic IP: 15.207.133.217"]
+        end
+
+        subgraph Docker_Compose ["Docker Compose Orchestration"]
+            subgraph star_poultry_network ["Private Bridge Network: star-poultry-network"]
+                
+                Nginx["Frontend Container (Nginx Alpine)\nPort 80 (Public)\n• Serves Vite React SPA\n• Reverse proxies /api/* & /ai/*"]
+                
+                FastAPI["Backend Container (FastAPI Python 3.11-slim)\nBound strictly to 127.0.0.1:8000\n• Non-root user (appuser)\n• Motor Async Engine\n• Gemini Function Registry"]
+            end
+        end
+    end
+
+    subgraph Cloud_Services ["External Managed Cloud Services"]
+        Atlas[("MongoDB Atlas Cluster\n(M0 Shared | TLS Encrypted)\nIP Whitelisted")]
+        Gemini["Google Gemini 2.5 Flash API\n(Function Calling & Tool Execution)"]
+    end
+
+    User -->|"HTTP (Port 80)"| EIP
+    Admin -->|"HTTP (Port 80)"| EIP
+    EIP --> Nginx
+    Nginx -->|"Static Assets (HTML/JS/CSS)"| User
+    Nginx -->|"Internal Proxy: http://backend:8000"| FastAPI
+    FastAPI -->|"TLS Motor Driver (Async I/O)"| Atlas
+    FastAPI -->|"HTTPS Function Calling"| Gemini
 ```
 
 ---
 
-## 🔧 Getting Started
+## 🛠️ Technology Stack
 
-### Backend Setup
-1. Navigate to the backend directory:
+| Layer | Technologies | Purpose |
+| :--- | :--- | :--- |
+| **Frontend UI** | React 18, TypeScript, Vite | Component-driven single page application |
+| **Styling & Components** | Tailwind CSS, Radix UI (shadcn/ui), Lucide Icons | Accessible, responsive, dark-mode ready design system |
+| **Data Visualization** | Recharts | Financial trends, expense distributions, and revenue graphs |
+| **State & Networking** | TanStack Query (React Query), Axios | Server-state caching, optimistic updates, and API clients |
+| **Backend API** | Python 3.11, FastAPI, Uvicorn | High-performance asynchronous REST API |
+| **Database & ODM** | MongoDB Atlas, Motor (AsyncIO Driver) | Scalable NoSQL document store with non-blocking cursors |
+| **Authentication** | JWT (JSON Web Tokens), Passlib (Bcrypt) | Stateless token sessions with role-based dependencies |
+| **Artificial Intelligence** | Google GenAI SDK (`gemini-2.5-flash`) | Structured function calling, tool registry, conversation memory |
+| **Containerization** | Docker, Docker Compose, Multi-stage Builds | Reproducible development and production environments |
+| **Web Server / Proxy** | Nginx (Alpine Linux) | Reverse proxy, static file serving, HTTP compression |
+| **CI/CD** | GitHub Actions | Automated linting, Vitest tests, Buildx caching, and EC2 CD |
+| **Cloud Hosting** | AWS EC2 (`t3.micro`, ap-south-1 Mumbai) | Cloud computing host with allocated Elastic IP |
+
+---
+
+## 🧠 Core Engineering Modules
+
+### 1. Authentication & Role-Based Access Control (RBAC)
+
+The application implements stateless JWT bearer authentication:
+- **Token Generation**: On login (`/api/auth/login`), users receive an encrypted JWT containing their `sub` (User ID) and `role` (`admin` vs `customer`).
+- **Route Guarding**: Protected FastAPI routes use dependency injection:
+  - `get_current_user`: Validates token signature and loads user session.
+  - `require_admin`: Strictly verifies `role == "admin"`. Applied to sensitive endpoints including `/api/profit/*`, `/api/expenses/*`, `/api/settings/*`, and `/ai/*`.
+- **Frontend Interceptor**: Axios interceptor in [`src/lib/`](file:///Users/apple/Documents/poultry/src/lib) attaches `Authorization: Bearer <token>` to outbound requests and handles automatic logout on 401 Unauthorized responses.
+
+### 2. Gemini Function-Calling AI Copilot
+
+The AI Assistant is not a generic chatbot; it is a **business copilot** with direct, permission-controlled access to your live database via Gemini Function Calling:
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Admin as Farm Manager
+    participant UI as React AIAssistant
+    participant API as FastAPI (/ai/chat)
+    participant Agent as Gemini Agent & Memory
+    participant Reg as Tool Registry
+    participant DB as MongoDB Atlas
+
+    Admin->>UI: "Who is my top customer this month?"
+    UI->>API: POST /ai/chat (Prompt + JWT)
+    API->>API: Verify Admin Authorization
+    API->>Agent: Resolve Context & Intent
+    Agent->>Reg: Match Function Call: get_customer_rankings()
+    Reg->>DB: Aggregate Orders grouped by Customer (Motor)
+    DB-->>Reg: Return Aggregated Revenue & Tray Count
+    Reg-->>Agent: Pass Tool Execution Result
+    Agent->>Agent: Synthesize Final Business Answer
+    Agent-->>API: Natural Language Response
+    API-->>UI: Display Analysis & Actionable Recommendations
+```
+
+- **Tool Definitions** ([`backend/app/services/tool_definitions.py`](file:///Users/apple/Documents/poultry/backend/app/services/tool_definitions.py)): Declares structured schemas for tools such as `get_revenue`, `get_customer_rankings`, `get_dormant_customers`, `get_expense_categories`, and `get_business_health`.
+- **Tool Registry** ([`backend/app/services/tool_registry.py`](file:///Users/apple/Documents/poultry/backend/app/services/tool_registry.py)): Safely executes registered Python async helper functions against MongoDB and returns formatted payloads to the LLM.
+- **Conversation Memory** ([`backend/app/services/conversation_memory.py`](file:///Users/apple/Documents/poultry/backend/app/services/conversation_memory.py)): Maintains multi-turn context per session, allowing conversational follow-ups (e.g., *"Show dormant customers"* followed by *"Draft an email to re-engage them"*).
+
+### 3. Event-Driven Alert Engine
+
+The Alert Engine ([`backend/app/services/alert_engine.py`](file:///Users/apple/Documents/poultry/backend/app/services/alert_engine.py)) operates proactively:
+- **Audit Triggers**: Triggered whenever an order is submitted or updated, an expense is logged, or scheduled metrics run.
+- **Rules Evaluated**:
+  - *Business Health*: Score drops below threshold (<40/100).
+  - *Expense Spikes*: Category expense exceeds 40% of total operating costs.
+  - *Customer Inactivity*: Regular wholesale buyers with zero orders in 30+ days.
+  - *Profit Anomaly*: Negative operating margin detected for current billing period.
+- **Auto-Resolution & Deduplication**: Active alerts are automatically marked `isResolved = True` once underlying metrics recover, avoiding stale notifications.
+
+### 4. Database Architecture & Indexes
+
+Data is organized into 4 primary MongoDB collections:
+
+```text
+├── users        # Admin credentials, customer profiles, contact info
+├── orders       # Wholesale orders, tray quantities, billing totals, delivery status
+├── expenses     # Operating expenditures categorized (feed, medicine, labor, transport)
+└── alerts       # Proactive business notifications with severity, status, and metadata
+```
+
+**Startup Indexing**: On server initialization ([`backend/app/main.py`](file:///Users/apple/Documents/poultry/backend/app/main.py)), compound indexes are ensured automatically:
+```python
+await orders_collection.create_index([("status", 1), ("createdAt", -1)])
+await orders_collection.create_index([("userId", 1), ("createdAt", -1)])
+await expenses_collection.create_index([("expenseDate", -1)])
+await expenses_collection.create_index([("category", 1), ("expenseDate", -1)])
+```
+
+---
+
+## 🛡️ Cloud Infrastructure & Production Hardening
+
+Deploying on an AWS Free Tier `t3.micro` instance (1 GB RAM, 2 vCPUs) requires deliberate systems engineering:
+
+1. **Linux Virtual Memory (Swap Space)**:
+   - 1 GB RAM is insufficient for simultaneous Docker builds, Node compiling, and Python execution.
+   - Configured a permanent 2 GB swapfile (`/swapfile`) on NVMe storage with optimized `vm.swappiness = 10` and `vm.vfs_cache_pressure = 50`.
+2. **Node.js Heap Allocation Tuning**:
+   - In [`Dockerfile`](file:///Users/apple/Documents/poultry/Dockerfile), Node V8's heap cap is explicitly expanded:
+     ```dockerfile
+     ENV NODE_OPTIONS="--max-old-space-size=1536"
+     ```
+     This allows Vite to utilize swap during bundling without triggering `FATAL ERROR: JavaScript heap out of memory`.
+3. **Loopback Isolation**:
+   - Backend container port is mapped strictly to `127.0.0.1:8000:8000`.
+   - External internet access cannot bypass Nginx or reach Uvicorn directly on port 8000.
+4. **Non-Root Container Security**:
+   - Backend [`backend/Dockerfile`](file:///Users/apple/Documents/poultry/backend/Dockerfile) creates an unprivileged user (`appuser`, UID 1000) and executes with `USER appuser`.
+5. **Static IP Stability**:
+   - Attached an **AWS Elastic IP** (`15.207.133.217`), preventing IP drift across EC2 restarts and keeping the MongoDB Atlas whitelist stable.
+
+---
+
+## 🚀 CI/CD & GitOps Pipeline
+
+Every push to the production branch triggers an automated GitHub Actions pipeline ([`.github/workflows/ci.yml`](file:///Users/apple/Documents/poultry/.github/workflows/ci.yml)):
+
+```mermaid
+flowchart TD
+    Push["git push origin aws-deployment"] --> CI["GitHub Actions Workflow"]
+    
+    subgraph Parallel_Checks ["Phase 1: Verification Checks"]
+        Job1["Frontend Check\n• Node 20 / npm ci\n• Vitest Unit Tests\n• Vite Production Build"]
+        Job2["Backend Check\n• Python 3.11 / pip install\n• Bytecode compileall\n• FastAPI Boot & Route Check"]
+    end
+
+    CI --> Job1
+    CI --> Job2
+    Job1 --> Job3["Docker Build Verification\n• Buildx GHA Layer Caching\n• Build backend image\n• Build frontend image"]
+    Job2 --> Job3
+
+    Job3 --> Gate{"All Checks Pass?"}
+    Gate -- No --> Halt["Build Fails: Production Untouched"]
+    Gate -- Yes --> Deploy["Job 4: Deploy to AWS EC2\n• SSH into EC2 (appleboy/ssh-action)\n• git pull origin aws-deployment\n• docker compose up -d --build"]
+    
+    Deploy --> Health["Automated Healthcheck\ncurl http://15.207.133.217/api/health"]
+    Health --> Live["Production Live & Healthy (✓)"]
+```
+
+---
+
+## 🌿 Repository & Branching Strategy
+
+| Branch | Deployment Target | Role |
+| :--- | :--- | :--- |
+| **`aws-deployment`** | **AWS EC2 Production** | **Default Branch**. Production releases for AWS. Commits and merged pull requests automatically trigger the CI/CD pipeline and hot-swap EC2 containers. |
+| **`aws-deployment-dev`** | Local / Staging | **Active Development Branch**. New features, bug fixes, and experiments are committed here. When tested, open a Pull Request into `aws-deployment`. |
+| **`main`** | Render (Legacy) | Reserved exclusively for the Render deployment. Kept isolated from AWS Docker files and CI actions. |
+
+---
+
+## 🔐 Environment Variables Reference
+
+### Backend Configuration (`backend/.env`)
+
+| Variable | Required | Default | Purpose |
+| :--- | :---: | :--- | :--- |
+| `MONGODB_URI` | **Yes** | — | MongoDB Atlas connection string (`mongodb+srv://...`) |
+| `MONGODB_DB` | **Yes** | — | Database name (e.g. `poultry_db`) |
+| `JWT_SECRET` | **Yes** | — | High-entropy secret key used to sign session tokens |
+| `JWT_ALGORITHM` | No | `HS256` | Cryptographic algorithm for JWT signing |
+| `ACCESS_TOKEN_EXPIRE_MINUTES` | No | `10080` (7 days) | Lifetime of access tokens |
+| `ADMIN_EMAIL` | No | `admin@starpoultry.com` | Default seeded admin email |
+| `ADMIN_PASSWORD` | No | `admin123` | Default seeded admin password |
+| `FRONTEND_URL` | No | `http://localhost:8080` | Allowed CORS origin (production uses Nginx internal proxy) |
+| `GEMINI_API_KEY_1` | No | `""` | Primary Google Gemini API key for AI assistant |
+| `GEMINI_API_KEY_2` | No | `""` | Fallback Gemini key to prevent quota throttling |
+| `GEMINI_API_KEY_3` | No | `""` | Second fallback Gemini key |
+
+### Frontend Configuration (`.env`)
+
+| Variable | Required | Default | Purpose |
+| :--- | :---: | :--- | :--- |
+| `VITE_API_URL` | No | `/api` | Base path for API requests (relative path routes through Nginx in production) |
+| `FRONTEND_PORT` | No | `8080` | Host port mapped to Nginx in Docker Compose (EC2 uses `80`) |
+
+---
+
+## 💻 Local Development Setup
+
+### Option A: Running with Docker Compose (Recommended)
+
+To run the exact production architecture on your local machine:
+
+1. Clone the repository and checkout the dev branch:
    ```bash
-   cd backend
+   git clone https://github.com/Aditya1026-05/poultry.git
+   cd poultry
+   git checkout aws-deployment-dev
    ```
-2. Create and activate a virtual environment:
+2. Create `backend/.env` from the example:
    ```bash
-   python3 -m venv .venv
-   source .venv/bin/activate
+   cp backend/.env.example backend/.env
+   # Populate MONGODB_URI and JWT_SECRET inside backend/.env
    ```
-3. Install dependencies:
+3. Start the entire container stack:
    ```bash
-   pip install -r requirements.txt
+   docker compose up --build
    ```
-4. Run the FastAPI development server:
-   ```bash
-   uvicorn app.main:app --reload
-   ```
-
-### Frontend Setup
-1. From the project root, install packages:
-   ```bash
-   npm install
-   # or
-   bun install
-   ```
-2. Run the Vite development server:
-   ```bash
-   npm run dev
-   ```
-   Open `http://localhost:8080` in your browser.
-
-
-# 🚀 Star Poultry AI Roadmap
-
-## Level 1 – Business Intelligence Assistant
-
-**Progress:** ✅ 100%
-
-**Capability:**
-Answer core business questions related to revenue, expenses, profit, orders, and customers.
-
-**Example Questions:**
-
-* What is my total revenue?
-* How much profit have I made?
-* How many orders are completed?
-* Who is my top customer?
+4. Access the application:
+   - Frontend: `http://localhost:8080`
+   - Backend API Docs: `http://localhost:8000/docs`
+   - Healthcheck: `http://localhost:8000/api/health`
 
 ---
 
-## Level 2 – Farm Performance Analyst
+### Option B: Running Bare-Metal Services Locally
 
-**Progress:** ✅ 100%
+#### 1. Backend Service
+```bash
+cd backend
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+uvicorn app.main:app --reload --port 8000
+```
 
-**Capability:**
-Analyze business performance, identify strengths and weaknesses, and generate recommendations.
-
-**Example Questions:**
-
-* How healthy is my business?
-* What needs attention?
-* Which month performed best?
-* What should I focus on?
-
----
-
-## Level 3 – Customer Intelligence Engine
-
-**Progress:** ✅ 100%
-
-**Capability:**
-Understand customer behavior, rankings, segmentation, and inactivity patterns.
-
-**Example Questions:**
-
-* Who are my VIP customers?
-* Show customer leaderboard.
-* Who are my dormant customers?
-* Why is B2 a VIP customer?
+#### 2. Frontend Application
+```bash
+# In the repository root
+npm install
+npm run dev
+```
 
 ---
 
-## Level 4 – Smart Business Alerts
+## 🛠️ Production Operations & Runbook
 
-**Progress:**  ✅ 100%
+For maintainers managing the live AWS EC2 server (`15.207.133.217`):
 
-**Capability:**
-Automatically detect risks, anomalies, and operational issues without requiring manual analysis.
+### 1. Connecting to the Server
+```bash
+ssh -i ~/Downloads/star-poultry-key.pem ubuntu@15.207.133.217
+```
 
-**Example Questions:**
+### 2. Checking Container Status & Health
+```bash
+cd ~/poultry
+docker compose ps
+```
+Both containers should show `Up (healthy)`.
 
-* What alerts do I have?
-* What needs urgent attention?
-* Are there any business risks?
-* Why did I receive this alert?
+### 3. Viewing Real-Time Logs
+```bash
+# Stream all logs
+docker compose logs -f
 
----
+# View backend API logs only
+docker compose logs -f backend
 
-## Level 5 – Natural Language Data Queries
+# View Nginx access & error logs
+docker compose logs -f frontend
+```
 
-**Progress:**  ✅ 100%
+### 4. Manual Deployment or Container Restart
+```bash
+cd ~/poultry
+git pull origin aws-deployment
+docker compose up -d --build
+```
 
-**Capability:**
-Query business data using plain English instead of predefined commands.
-
-**Example Questions:**
-
-* Show orders between June 1 and June 15.
-* Compare this month with last month.
-* How much revenue did B2 generate?
-* Show medicine expenses.
-
----
-
-## Level 6 – AI Business Operator
-
-**Progress:**  30%
-
-**Capability:**
-Allow the AI to perform business operations directly through chat.
-
-**Example Questions:**
-
-* Add an expense of ₹5000.
-* Create an order for B2.
-* Register a new customer.
-* Update delivery status.
+### 5. Verifying Host Memory & Swap
+```bash
+free -h
+```
+Confirm `Swap:` displays `2.0Gi` total with adequate free capacity.
 
 ---
 
-## Level 7 – Expense Optimization Engine
+## 📈 AI Capabilities & Roadmap
 
-**Progress:**  35%
+The AI copilot roadmap tracks features from simple KPI reporting to autonomous farm optimization:
 
-**Capability:**
-Identify spending inefficiencies and profitability opportunities.
-
-**Example Questions:**
-
-* How can I reduce expenses?
-* Which category is hurting profit?
-* What costs should I optimize?
-* How can I improve profitability?
-
----
-
-## Level 8 – Demand Forecasting Engine
-
-**Progress:**  0%
-
-**Capability:**
-Predict future revenue, profit, demand, and order volume.
-
-**Example Questions:**
-
-* What will next month's revenue be?
-* Forecast sales for next month.
-* Predict tray demand.
-* Expected profit next month?
+| Tier | Capability | Status | Sample Prompts |
+| :---: | :--- | :---: | :--- |
+| **Level 1** | **Business Intelligence Assistant** | ✅ 100% | *"What is my total revenue this month?"*, *"How much profit have I made?"* |
+| **Level 2** | **Farm Performance Analyst** | ✅ 100% | *"How healthy is my business?"*, *"Which month had the best operating margins?"* |
+| **Level 3** | **Customer Intelligence Engine** | ✅ 100% | *"Who are my VIP customers?"*, *"Show dormant wholesale buyers"* |
+| **Level 4** | **Smart Business Alerts** | ✅ 100% | *"What alerts need urgent attention?"*, *"Why was this warning generated?"* |
+| **Level 5** | **Natural Language Queries** | ✅ 100% | *"Show egg orders between Aug 1 and Aug 15"*, *"Break down medicine expenses"* |
+| **Level 6** | **AI Business Operator** | 🔄 30% | *"Add an expense of ₹5000 for feed"*, *"Create an order for Customer B2"* |
+| **Level 7** | **Expense Optimization** | 🔄 35% | *"How can I reduce feed expenses?"*, *"Which cost category is hurting margins?"* |
+| **Level 8** | **Demand Forecasting** | 📅 Planned | *"Forecast tray demand for next month"*, *"Project expected Q4 revenue"* |
+| **Level 9** | **Strategic Advisor** | 🔄 45% | *"Act as my business consultant. Where should I invest profits?"* |
+| **Level 10** | **Autonomous Poultry Copilot** | 📅 Planned | Proactive daily briefing, anomaly detection, and automated inventory reordering |
 
 ---
 
-## Level 9 – AI Business Advisor
+## 📄 License & Attribution
 
-**Progress:**  45%
-
-**Capability:**
-Generate strategic recommendations and growth plans using business intelligence.
-
-**Example Questions:**
-
-* Act as my business consultant.
-* How should I grow?
-* Where should I invest?
-* What should be my next priority?
-
----
-
-## Level 10 – Autonomous Poultry Copilot
-
-**Progress:**  0%
-
-**Capability:**
-Provide proactive monitoring, daily briefings, forecasting, and operational guidance.
-
-**Example Questions:**
-
-* Give me today's business briefing.
-* What should I focus on today?
-* Are there any upcoming risks?
-* What actions do you recommend?
-
-
+Developed for **Star Poultry Farm Management**. All rights reserved.
