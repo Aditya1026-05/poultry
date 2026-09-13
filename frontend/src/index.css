@@ -78,8 +78,10 @@
   }
 
   html {
-  scroll-behavior: smooth;
-  font-size: 13px;
+    scroll-behavior: smooth;
+    font-size: 13px;
+    overflow-x: hidden;
+    max-width: 100vw;
   }
 
   body {
@@ -87,6 +89,8 @@
     font-feature-settings: "ss01", "cv11";
     background: var(--gradient-hero);
     background-attachment: fixed;
+    overflow-x: hidden;
+    max-width: 100vw;
   }
 
   h1, h2, h3, h4 {
@@ -96,6 +100,12 @@
   ::selection {
     background: hsl(var(--accent) / 0.4);
     color: hsl(var(--foreground));
+  }
+
+  @media (max-width: 767px) {
+    main {
+      padding-bottom: 5.5rem;
+    }
   }
 }
 

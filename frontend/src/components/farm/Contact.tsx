@@ -49,45 +49,45 @@ export default function Contact() {
   };
 
   return (
-    <section id="contact" className="relative py-32 md:py-40 overflow-hidden">
+    <section id="contact" className="relative py-16 sm:py-24 md:py-36 overflow-hidden">
       <div className="absolute inset-0 -z-10">
         <img src={gallery1} alt="" className="w-full h-full object-cover opacity-25 blur-2xl scale-110" loading="lazy" />
         <div className="absolute inset-0 bg-background/70" />
       </div>
 
-      <div className="container grid lg:grid-cols-2 gap-16 items-center">
+      <div className="container grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
         <div>
           <Reveal>
-            <p className="text-xs uppercase tracking-[0.3em] text-accent mb-5">Contact</p>
+            <p className="text-xs uppercase tracking-[0.3em] text-accent mb-4 sm:mb-5">Contact</p>
           </Reveal>
           <Reveal delay={0.1}>
-            <h2 className="text-3xl sm:text-4xl md:text-5xl xl:text-6xl font-display leading-[1.12] tracking-normal break-words">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl xl:text-6xl font-display leading-[1.15] tracking-normal break-words">
               Let's grow{" "}
               <span className="text-gradient-gold italic">something better</span>.
             </h2>
           </Reveal>
           <Reveal delay={0.2}>
-            <p className="mt-6 text-lg text-muted-foreground max-w-md">
+            <p className="mt-5 sm:mt-6 text-base sm:text-lg text-muted-foreground max-w-md leading-relaxed">
               Partner with us, source from us, or come visit the farm. Drop a line and we'll respond within a day.
             </p>
           </Reveal>
           <Reveal delay={0.3}>
-            <div className="mt-10 space-y-3 text-sm text-muted-foreground">
-              <p><span className="text-foreground">adityatayal2610@gmail.com</span> — general inquiries</p>
-              <p><span className="text-foreground">+91 8847660891</span> — sales & partnerships</p>
-              <p>Near Indian oil Petrol Station,barnala Road</p>
+            <div className="mt-8 sm:mt-10 space-y-3 text-sm text-muted-foreground">
+              <p><span className="text-foreground font-medium">adityatayal2610@gmail.com</span> — general inquiries</p>
+              <p><span className="text-foreground font-medium">+91 8847660891</span> — sales & partnerships</p>
+              <p>Near Indian oil Petrol Station, Barnala Road</p>
             </div>
           </Reveal>
         </div>
 
         <Reveal delay={0.2}>
-          <form onSubmit={onSubmit} className="rounded-[2rem] glass-strong p-8 md:p-10 shadow-leaf space-y-6">
+          <form onSubmit={onSubmit} className="rounded-[2rem] glass-strong p-6 sm:p-8 md:p-10 shadow-leaf space-y-5 sm:space-y-6">
             <Field id="name" label="Your name" />
             <Field id="email" label="Email address" type="email" />
             <Field id="message" label="Tell us a little" as="textarea" />
             <button
               type="submit"
-              className="group inline-flex items-center gap-2 px-7 py-4 rounded-full bg-gradient-gold text-accent-foreground font-medium shadow-glow hover:shadow-leaf transition-all hover:-translate-y-0.5"
+              className="group inline-flex items-center justify-center w-full sm:w-auto gap-2 px-7 py-3.5 sm:py-4 rounded-full bg-gradient-gold text-accent-foreground font-medium shadow-glow hover:shadow-leaf transition-all hover:-translate-y-0.5"
             >
               Send message
               <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />

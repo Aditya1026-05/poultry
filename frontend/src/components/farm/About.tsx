@@ -12,26 +12,26 @@ const points = [
 
 export default function About() {
   return (
-    <section id="about" className="relative py-32 md:py-40 noise">
-      <div className="container grid lg:grid-cols-2 gap-16 items-center">
+    <section id="about" className="relative py-16 sm:py-24 md:py-36 noise">
+      <div className="container grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
         <div>
           <Reveal>
-            <p className="text-xs uppercase tracking-[0.3em] text-accent mb-5">About Star Poultry</p>
+            <p className="text-xs uppercase tracking-[0.3em] text-accent mb-4 sm:mb-5">About Star Poultry</p>
           </Reveal>
           <Reveal delay={0.1}>
-            <h2 className="text-3xl sm:text-4xl md:text-5xl xl:text-6xl font-display leading-[1.12] tracking-normal break-words">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl xl:text-6xl font-display leading-[1.15] tracking-normal break-words">
               Where ancient craft meets{" "}
               <span className="text-gradient-leaf italic">modern intelligence</span>.
             </h2>
           </Reveal>
           <Reveal delay={0.2}>
-            <p className="mt-6 text-lg text-muted-foreground max-w-xl">
+            <p className="mt-5 sm:mt-6 text-base sm:text-lg text-muted-foreground max-w-xl leading-relaxed">
               We've reimagined the poultry farm from the ground up — pairing decades of farming wisdom with sensors,
               AI, and renewable systems that respect the land and the animals on it.
             </p>
           </Reveal>
 
-          <div className="mt-10 space-y-5">
+          <div className="mt-8 sm:mt-10 space-y-4 sm:space-y-5">
             {points.map((p, i) => (
               <Reveal key={p.title} delay={0.3 + i * 0.1}>
                 <div className="flex gap-4 group">
@@ -39,7 +39,7 @@ export default function About() {
                     <p.icon className="w-5 h-5" />
                   </span>
                   <div>
-                    <h3 className="font-display text-xl">{p.title}</h3>
+                    <h3 className="font-display text-lg sm:text-xl">{p.title}</h3>
                     <p className="text-muted-foreground text-sm mt-1 max-w-md">{p.desc}</p>
                   </div>
                 </div>
@@ -49,7 +49,7 @@ export default function About() {
         </div>
 
         <Reveal delay={0.2}>
-          <div className="relative aspect-square rounded-[2rem] glass-strong overflow-hidden shadow-leaf">
+          <div className="relative aspect-square max-w-sm sm:max-w-md mx-auto lg:max-w-none w-full rounded-[2rem] glass-strong overflow-hidden shadow-leaf">
             <div className="absolute inset-0 bg-gradient-radial-gold pointer-events-none" />
             <Suspense fallback={null}>
               <EggModel />
@@ -57,7 +57,7 @@ export default function About() {
             <div className="absolute bottom-6 left-6 right-6 flex justify-between items-end">
               <div>
                 <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">Heritage</p>
-                <p className="font-display text-2xl">Free-range eggs</p>
+                <p className="font-display text-xl sm:text-2xl">Free-range eggs</p>
               </div>
               <span className="text-xs px-3 py-1.5 rounded-full glass text-accent">Grade A+</span>
             </div>

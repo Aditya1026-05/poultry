@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import {
   CheckCircle2,
@@ -13,6 +13,10 @@ import {
   Upload,
   XCircle,
   AlertTriangle,
+  ChevronDown,
+  Search,
+  ArrowUpDown,
+  X,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import AppHeader from "@/components/AppHeader";
@@ -54,7 +58,57 @@ export default function Admin() {
   const [selected, setSelected] = useState<Order | null>(null);
   const [criticalAlerts, setCriticalAlerts] = useState<Alert[]>([]);
   const [showPopup, setShowPopup] = useState(false);
+  const [visibleCount, setVisibleCount] = useState(10);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortBy, setSortBy] = useState<string>("date_desc");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
   const navigate = useNavigate();
+
+  const filteredAndSortedOrders = useMemo(() => {
+    return orders
+      .filter((o) => {
+        if (statusFilter !== "all" && o.status !== statusFilter) {
+          return false;
+        }
+        if (searchQuery.trim()) {
+          const q = searchQuery.toLowerCase().trim();
+          const matchName = o.businessName?.toLowerCase().includes(q);
+          const matchEmail = o.email?.toLowerCase().includes(q);
+          const matchId = o.id?.toLowerCase().includes(q);
+          const matchPhone = o.phone ? o.phone.toLowerCase().includes(q) : false;
+          if (!matchName && !matchEmail && !matchId && !matchPhone) {
+            return false;
+          }
+        }
+        return true;
+      })
+      .sort((a, b) => {
+        switch (sortBy) {
+          case "date_asc":
+            return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+          case "date_desc":
+            return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+          case "trays_desc":
+            return b.quantity - a.quantity;
+          case "trays_asc":
+            return a.quantity - b.quantity;
+          case "amount_desc":
+            return b.totalAmount - a.totalAmount;
+          case "amount_asc":
+            return a.totalAmount - b.totalAmount;
+          case "delivery_asc":
+            return new Date(a.preferredDeliveryDate).getTime() - new Date(b.preferredDeliveryDate).getTime();
+          case "status":
+            return a.status.localeCompare(b.status);
+          default:
+            return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        }
+      });
+  }, [orders, searchQuery, sortBy, statusFilter]);
+
+  useEffect(() => {
+    setVisibleCount(10);
+  }, [searchQuery, sortBy, statusFilter]);
 
   const checkCriticalAlerts = async () => {
     try {
@@ -125,7 +179,10 @@ export default function Admin() {
 
           <Tabs defaultValue="orders" className="w-full">
             <TabsList className="mb-6">
-              <TabsTrigger value="orders">Orders ({orders.length})</TabsTrigger>
+              <TabsTrigger value="orders">
+                Orders ({filteredAndSortedOrders.length}
+                {filteredAndSortedOrders.length !== orders.length ? ` of ${orders.length}` : ""})
+              </TabsTrigger>
               <TabsTrigger value="settings">
                 <SettingsIcon className="w-4 h-4 mr-1.5" /> Pricing & QR
               </TabsTrigger>
@@ -138,11 +195,133 @@ export default function Admin() {
                   <p className="text-muted-foreground">No orders yet.</p>
                 </div>
               ) : (
-                <div className="grid gap-3">
-                  {orders.map((o) => (
-                    <OrderRow key={o.id} order={o} onView={() => setSelected(o)} />
-                  ))}
-                </div>
+                <>
+                  {/* Search and Sort Toolbar */}
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mb-5">
+                    {/* Search by Orderer Name, Email, or Order ID */}
+                    <div className="relative flex-1 max-w-md">
+                      <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                      <Input
+                        type="text"
+                        placeholder="Search by orderer name, email, ID..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="pl-9 pr-8 glass-strong rounded-xl border-border/60 focus:border-accent text-sm"
+                      />
+                      {searchQuery && (
+                        <button
+                          type="button"
+                          onClick={() => setSearchQuery("")}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-0.5"
+                          title="Clear search"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Filter & Sort Controls */}
+                    <div className="flex items-center gap-2">
+                      {/* Status Filter */}
+                      <Select value={statusFilter} onValueChange={setStatusFilter}>
+                        <SelectTrigger className="w-[140px] sm:w-[160px] glass-strong rounded-xl text-xs h-10 border-border/60">
+                          <SelectValue placeholder="All Statuses" />
+                        </SelectTrigger>
+                        <SelectContent className="glass-strong border-border/60">
+                          <SelectItem value="all">All Statuses</SelectItem>
+                          <SelectItem value="pending_payment_review">Pending Review</SelectItem>
+                          <SelectItem value="confirmed">Confirmed</SelectItem>
+                          <SelectItem value="delivered">Delivered</SelectItem>
+                          <SelectItem value="completed">Completed</SelectItem>
+                          <SelectItem value="rejected">Rejected</SelectItem>
+                        </SelectContent>
+                      </Select>
+
+                      {/* Sorting options */}
+                      <Select value={sortBy} onValueChange={setSortBy}>
+                        <SelectTrigger className="w-[170px] sm:w-[195px] glass-strong rounded-xl text-xs h-10 border-border/60">
+                          <div className="flex items-center gap-1.5 truncate">
+                            <ArrowUpDown className="w-3.5 h-3.5 text-accent shrink-0" />
+                            <SelectValue placeholder="Sort by" />
+                          </div>
+                        </SelectTrigger>
+                        <SelectContent className="glass-strong border-border/60">
+                          <SelectItem value="date_desc">Timeline: Newest First</SelectItem>
+                          <SelectItem value="date_asc">Timeline: Oldest First</SelectItem>
+                          <SelectItem value="trays_desc">Trays: High to Low</SelectItem>
+                          <SelectItem value="trays_asc">Trays: Low to High</SelectItem>
+                          <SelectItem value="amount_desc">Amount: High to Low</SelectItem>
+                          <SelectItem value="amount_asc">Amount: Low to High</SelectItem>
+                          <SelectItem value="delivery_asc">Delivery: Earliest First</SelectItem>
+                          <SelectItem value="status">Status: Grouped</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  {filteredAndSortedOrders.length === 0 ? (
+                    <div className="glass-strong rounded-2xl p-10 text-center">
+                      <Search className="w-10 h-10 text-muted-foreground mx-auto mb-3 opacity-30" />
+                      <h3 className="font-display text-lg mb-1">No matching orders found</h3>
+                      <p className="text-xs text-muted-foreground mb-4">
+                        {searchQuery
+                          ? `No orders matching "${searchQuery}"`
+                          : "No orders match the selected filters."}
+                      </p>
+                      {(searchQuery || statusFilter !== "all") && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setSearchQuery("");
+                            setStatusFilter("all");
+                          }}
+                          className="rounded-full text-xs"
+                        >
+                          Clear Filters
+                        </Button>
+                      )}
+                    </div>
+                  ) : (
+                    <>
+                      <div className="grid gap-3">
+                        {filteredAndSortedOrders.slice(0, visibleCount).map((o) => (
+                          <OrderRow key={o.id} order={o} onView={() => setSelected(o)} />
+                        ))}
+                      </div>
+
+                      {filteredAndSortedOrders.length > 10 && (
+                        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mt-6 pt-4 border-t border-border/40 text-sm text-muted-foreground">
+                          <span>
+                            Showing {Math.min(visibleCount, filteredAndSortedOrders.length)} of {filteredAndSortedOrders.length} orders
+                          </span>
+                          <div className="flex items-center gap-2">
+                            {visibleCount < filteredAndSortedOrders.length ? (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setVisibleCount((prev) => prev + 10)}
+                                className="glass-strong hover:bg-foreground/5 border-accent/40 text-foreground px-5 rounded-full flex items-center gap-1.5"
+                              >
+                                Show More
+                                <ChevronDown className="w-3.5 h-3.5 text-accent" />
+                              </Button>
+                            ) : (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setVisibleCount(10)}
+                                className="text-muted-foreground hover:text-foreground text-xs"
+                              >
+                                Show Less
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  )}
+                </>
               )}
             </TabsContent>
 

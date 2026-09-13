@@ -25,7 +25,7 @@ export default function Hero() {
       {/* Copy */}
       <motion.div
         style={{ y, opacity }}
-        className="relative z-10 container min-h-screen flex flex-col justify-center pt-32 pb-24"
+        className="relative z-10 container min-h-screen flex flex-col justify-center pt-28 pb-16 sm:pt-32 sm:pb-24"
       >
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -41,12 +41,12 @@ export default function Hero() {
           initial={{ opacity: 0, y: 30, filter: "blur(10px)" }}
           animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
           transition={{ duration: 1, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
-          // className="mt-6 max-w-4xl inline-block rounded-2xl glass-strong px-6 py-5 md:px-8 md:py-6"
+          className="mt-6"
         >
-          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-display font-medium leading-[1.08] tracking-normal whitespace-nowrap drop-shadow-[0_4px_20px_rgba(0,0,0,0.6)]">
+          <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-display font-medium leading-[1.1] tracking-tight drop-shadow-[0_4px_20px_rgba(0,0,0,0.6)]">
             Clean and Healthy
           </h1>
-          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-display font-medium leading-[1.08] tracking-normal whitespace-nowrap drop-shadow-[0_4px_20px_rgba(0,0,0,0.6)]">
+          <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-display font-medium leading-[1.1] tracking-tight drop-shadow-[0_4px_20px_rgba(0,0,0,0.6)]">
             <span className="text-gradient-gold">Poultry Farming</span>
           </h1>
         </motion.div>
@@ -55,7 +55,7 @@ export default function Hero() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.8 }}
-          className="mt-8 max-w-xl text-lg md:text-xl text-muted-foreground"
+          className="mt-6 sm:mt-8 max-w-xl text-base sm:text-lg md:text-xl text-muted-foreground leading-relaxed"
         >
           Sustainable. Efficient. Intelligent. We blend nature with technology to grow healthier birds and a healthier planet.
         </motion.p>
@@ -64,18 +64,18 @@ export default function Hero() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 1 }}
-          className="mt-10 flex flex-wrap items-center gap-4"
+          className="mt-8 sm:mt-10 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 max-w-xs sm:max-w-none"
         >
           <a
             href="#about"
-            className="group inline-flex items-center gap-2 px-7 py-4 rounded-full bg-gradient-gold text-accent-foreground font-medium shadow-glow hover:shadow-leaf transition-all duration-500 hover:-translate-y-0.5"
+            className="group inline-flex items-center justify-center gap-2 px-7 py-3.5 sm:py-4 rounded-full bg-gradient-gold text-accent-foreground font-medium shadow-glow hover:shadow-leaf transition-all duration-500 hover:-translate-y-0.5"
           >
             Explore Farm
             <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
           </a>
           <a
             href="#contact"
-            className="inline-flex items-center gap-2 px-7 py-4 rounded-full glass text-foreground hover:bg-foreground/10 transition-colors"
+            className="inline-flex items-center justify-center gap-2 px-7 py-3.5 sm:py-4 rounded-full glass text-foreground hover:bg-foreground/10 transition-colors"
           >
             Get Started
           </a>
@@ -86,7 +86,7 @@ export default function Hero() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1.6, duration: 1 }}
-          className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-xs uppercase tracking-[0.3em] text-muted-foreground"
+          className="hidden sm:flex absolute bottom-8 left-1/2 -translate-x-1/2 flex-col items-center gap-2 text-xs uppercase tracking-[0.3em] text-muted-foreground pointer-events-none"
         >
           Scroll
           <span className="w-px h-12 bg-gradient-to-b from-accent to-transparent animate-pulse-glow" />
