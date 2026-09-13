@@ -1,52 +1,44 @@
 import { useState, FormEvent } from "react";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Loader2 } from "lucide-react";
 import Reveal from "./Reveal";
 import { toast } from "sonner";
 import gallery1 from "@/assets/gallery-1.jpg";
 
-function Field({ id, label, type = "text", as = "input" }: { id: string; label: string; type?: string; as?: "input" | "textarea" }) {
-  const [val, setVal] = useState("");
-  const sharedClass =
-    "peer w-full bg-transparent border-b border-border focus:border-accent outline-none px-1 pt-6 pb-2 text-foreground transition-colors resize-none";
-  return (
-    <div className="relative">
-      {as === "textarea" ? (
-        <textarea
-          id={id}
-          name={id}
-          rows={4}
-          value={val}
-          onChange={(e) => setVal(e.target.value)}
-          placeholder=" "
-          className={sharedClass}
-        />
-      ) : (
-        <input
-          id={id}
-          name={id}
-          type={type}
-          value={val}
-          onChange={(e) => setVal(e.target.value)}
-          placeholder=" "
-          className={sharedClass}
-        />
-      )}
-      <label
-        htmlFor={id}
-        className="absolute left-1 top-2 text-xs uppercase tracking-[0.2em] text-muted-foreground transition-all peer-placeholder-shown:top-6 peer-placeholder-shown:text-sm peer-placeholder-shown:tracking-normal peer-placeholder-shown:normal-case peer-focus:top-2 peer-focus:text-xs peer-focus:tracking-[0.2em] peer-focus:uppercase peer-focus:text-accent"
-      >
-        {label}
-      </label>
-    </div>
-  );
-}
+const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8000/api";
 
 export default function Contact() {
-  const onSubmit = (e: FormEvent) => {
+  const [formData, setFormData] = useState({ name: "", email: "", message: "" });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    toast.success("Thanks — we'll be in touch within 24 hours.");
-    (e.target as HTMLFormElement).reset();
+    if (!formData.name.trim() || !formData.email.trim() || !formData.message.trim()) {
+      toast.error("Please fill in all required fields.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const res = await fetch(`${API_URL}/contact`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.detail || "Failed to submit message. Please try again.");
+      }
+
+      toast.success("Message sent! We have received your inquiry and will be in touch within 24 hours.");
+      setFormData({ name: "", email: "", message: "" });
+    } catch (err: any) {
+      toast.error(err.message || "Failed to send message. Please contact us directly via email.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
+
 
   return (
     <section id="contact" className="relative py-16 sm:py-24 md:py-36 overflow-hidden">
@@ -73,8 +65,24 @@ export default function Contact() {
           </Reveal>
           <Reveal delay={0.3}>
             <div className="mt-8 sm:mt-10 space-y-3 text-sm text-muted-foreground">
-              <p><span className="text-foreground font-medium">adityatayal2610@gmail.com</span> — general inquiries</p>
-              <p><span className="text-foreground font-medium">+91 8847660891</span> — sales & partnerships</p>
+              <p>
+                <a href="mailto:startpoultrybarnala@gmail.com" className="text-foreground font-medium hover:text-accent transition-colors">
+                  startpoultrybarnala@gmail.com
+                </a>{" "}
+                — inquiries & support
+              </p>
+              <p>
+                <a href="mailto:adityatayal2610@gmail.com" className="text-foreground font-medium hover:text-accent transition-colors">
+                  adityatayal2610@gmail.com
+                </a>{" "}
+                — general inquiries
+              </p>
+              <p>
+                <a href="tel:+918847660891" className="text-foreground font-medium hover:text-accent transition-colors">
+                  +91 8847660891
+                </a>{" "}
+                — sales & partnerships
+              </p>
               <p>Near Indian oil Petrol Station, Barnala Road</p>
             </div>
           </Reveal>
@@ -82,15 +90,79 @@ export default function Contact() {
 
         <Reveal delay={0.2}>
           <form onSubmit={onSubmit} className="rounded-[2rem] glass-strong p-6 sm:p-8 md:p-10 shadow-leaf space-y-5 sm:space-y-6">
-            <Field id="name" label="Your name" />
-            <Field id="email" label="Email address" type="email" />
-            <Field id="message" label="Tell us a little" as="textarea" />
+            <div className="relative">
+              <input
+                id="name"
+                name="name"
+                type="text"
+                required
+                value={formData.name}
+                onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
+                placeholder=" "
+                className="peer w-full bg-transparent border-b border-border focus:border-accent outline-none px-1 pt-6 pb-2 text-foreground transition-colors"
+              />
+              <label
+                htmlFor="name"
+                className="absolute left-1 top-2 text-xs uppercase tracking-[0.2em] text-muted-foreground transition-all peer-placeholder-shown:top-6 peer-placeholder-shown:text-sm peer-placeholder-shown:tracking-normal peer-placeholder-shown:normal-case peer-focus:top-2 peer-focus:text-xs peer-focus:tracking-[0.2em] peer-focus:uppercase peer-focus:text-accent"
+              >
+                Your name
+              </label>
+            </div>
+
+            <div className="relative">
+              <input
+                id="email"
+                name="email"
+                type="email"
+                required
+                value={formData.email}
+                onChange={(e) => setFormData((prev) => ({ ...prev, email: e.target.value }))}
+                placeholder=" "
+                className="peer w-full bg-transparent border-b border-border focus:border-accent outline-none px-1 pt-6 pb-2 text-foreground transition-colors"
+              />
+              <label
+                htmlFor="email"
+                className="absolute left-1 top-2 text-xs uppercase tracking-[0.2em] text-muted-foreground transition-all peer-placeholder-shown:top-6 peer-placeholder-shown:text-sm peer-placeholder-shown:tracking-normal peer-placeholder-shown:normal-case peer-focus:top-2 peer-focus:text-xs peer-focus:tracking-[0.2em] peer-focus:uppercase peer-focus:text-accent"
+              >
+                Email address
+              </label>
+            </div>
+
+            <div className="relative">
+              <textarea
+                id="message"
+                name="message"
+                rows={4}
+                required
+                value={formData.message}
+                onChange={(e) => setFormData((prev) => ({ ...prev, message: e.target.value }))}
+                placeholder=" "
+                className="peer w-full bg-transparent border-b border-border focus:border-accent outline-none px-1 pt-6 pb-2 text-foreground transition-colors resize-none"
+              />
+              <label
+                htmlFor="message"
+                className="absolute left-1 top-2 text-xs uppercase tracking-[0.2em] text-muted-foreground transition-all peer-placeholder-shown:top-6 peer-placeholder-shown:text-sm peer-placeholder-shown:tracking-normal peer-placeholder-shown:normal-case peer-focus:top-2 peer-focus:text-xs peer-focus:tracking-[0.2em] peer-focus:uppercase peer-focus:text-accent"
+              >
+                Tell us a little
+              </label>
+            </div>
+
             <button
               type="submit"
-              className="group inline-flex items-center justify-center w-full sm:w-auto gap-2 px-7 py-3.5 sm:py-4 rounded-full bg-gradient-gold text-accent-foreground font-medium shadow-glow hover:shadow-leaf transition-all hover:-translate-y-0.5"
+              disabled={isSubmitting}
+              className="group inline-flex items-center justify-center w-full sm:w-auto gap-2 px-7 py-3.5 sm:py-4 rounded-full bg-gradient-gold text-accent-foreground font-medium shadow-glow hover:shadow-leaf transition-all hover:-translate-y-0.5 disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              Send message
-              <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Sending message...
+                </>
+              ) : (
+                <>
+                  Send message
+                  <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                </>
+              )}
             </button>
           </form>
         </Reveal>

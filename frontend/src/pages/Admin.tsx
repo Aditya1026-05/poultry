@@ -17,6 +17,7 @@ import {
   Search,
   ArrowUpDown,
   X,
+  Mail,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import AppHeader from "@/components/AppHeader";
@@ -44,8 +45,10 @@ import {
   Order,
   PriceTier,
   Settings,
+  ContactInquiry,
   getAllOrders,
   getSettings,
+  getContactInquiries,
   updateOrder,
   updateSettings,
 } from "@/lib/mockApi";
@@ -54,6 +57,7 @@ import { toast } from "sonner";
 export default function Admin() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [settings, setSettings] = useState<Settings | null>(null);
+  const [inquiries, setInquiries] = useState<ContactInquiry[]>([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<Order | null>(null);
   const [criticalAlerts, setCriticalAlerts] = useState<Alert[]>([]);
@@ -127,9 +131,14 @@ export default function Admin() {
 
 
   const refresh = async () => {
-    const [o, s] = await Promise.all([getAllOrders(), getSettings()]);
+    const [o, s, inq] = await Promise.all([
+      getAllOrders(),
+      getSettings(),
+      getContactInquiries(),
+    ]);
     setOrders(o);
     setSettings(s);
+    setInquiries(inq);
     setLoading(false);
   };
 
@@ -182,6 +191,9 @@ export default function Admin() {
               <TabsTrigger value="orders">
                 Orders ({filteredAndSortedOrders.length}
                 {filteredAndSortedOrders.length !== orders.length ? ` of ${orders.length}` : ""})
+              </TabsTrigger>
+              <TabsTrigger value="inquiries">
+                <Mail className="w-4 h-4 mr-1.5" /> Inquiries ({inquiries.length})
               </TabsTrigger>
               <TabsTrigger value="settings">
                 <SettingsIcon className="w-4 h-4 mr-1.5" /> Pricing & QR
@@ -322,6 +334,66 @@ export default function Admin() {
                     </>
                   )}
                 </>
+              )}
+            </TabsContent>
+
+            <TabsContent value="inquiries">
+              {inquiries.length === 0 ? (
+                <div className="glass-strong rounded-3xl p-12 text-center">
+                  <Mail className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-40" />
+                  <h3 className="font-display text-lg mb-1">No inquiries yet</h3>
+                  <p className="text-sm text-muted-foreground">
+                    When visitors submit inquiries through the contact form on your website, they will appear here.
+                  </p>
+                </div>
+              ) : (
+                <div className="grid gap-4">
+                  {inquiries.map((inq) => (
+                    <div
+                      key={inq.id}
+                      className="glass-strong rounded-2xl p-5 border border-border/60 hover:border-accent/40 transition-all flex flex-col gap-3"
+                    >
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border/40 pb-3">
+                        <div>
+                          <span className="font-display font-semibold text-foreground text-base mr-3">
+                            {inq.name}
+                          </span>
+                          <a
+                            href={`mailto:${inq.email}`}
+                            className="text-xs text-accent hover:underline inline-block mr-3"
+                          >
+                            {inq.email}
+                          </a>
+                          {inq.phone && (
+                            <a
+                              href={`tel:${inq.phone}`}
+                              className="text-xs text-muted-foreground hover:text-foreground"
+                            >
+                              📞 {inq.phone}
+                            </a>
+                          )}
+                        </div>
+                        <span className="text-xs text-muted-foreground">
+                          {new Date(inq.createdAt).toLocaleString("en-IN", {
+                            dateStyle: "medium",
+                            timeStyle: "short",
+                          })}
+                        </span>
+                      </div>
+                      <p className="text-sm text-foreground/90 whitespace-pre-wrap leading-relaxed">
+                        {inq.message}
+                      </p>
+                      <div className="pt-2 flex justify-end">
+                        <a
+                          href={`mailto:${inq.email}?subject=Regarding your inquiry - Star Poultry Farm`}
+                          className="inline-flex items-center gap-1.5 text-xs px-3.5 py-1.5 rounded-full bg-accent/15 hover:bg-accent/25 text-accent border border-accent/30 transition-all font-medium"
+                        >
+                          <Mail className="w-3.5 h-3.5" /> Reply via Email
+                        </a>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               )}
             </TabsContent>
 

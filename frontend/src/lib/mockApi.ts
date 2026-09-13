@@ -348,3 +348,31 @@ export async function updateOrder(
 
   return res.json();
 }
+
+export interface ContactInquiry {
+  id: string;
+  name: string;
+  email: string;
+  phone?: string;
+  message: string;
+  createdAt: string;
+  status: string;
+}
+
+export async function getContactInquiries(): Promise<ContactInquiry[]> {
+  const token = getToken();
+  if (!token) return [];
+
+  const res = await fetch(`${API_URL}/contact`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!res.ok) {
+    return [];
+  }
+
+  return res.json();
+}
+
