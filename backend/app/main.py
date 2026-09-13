@@ -14,13 +14,24 @@ from app.config import settings
 
 app = FastAPI(title="Star Poultry Farm API")
 
+cors_origins = list({
+    settings.frontend_url,
+    "https://starpoultry.shop",
+    "https://www.starpoultry.shop",
+    "http://starpoultry.shop",
+    "http://www.starpoultry.shop",
+    "http://localhost:8080",
+    "http://127.0.0.1:8080",
+})
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[settings.frontend_url],
+    allow_origins=cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 app.include_router(auth_router)
 app.include_router(settings_router)
