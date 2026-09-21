@@ -211,7 +211,7 @@ export default function Admin() {
     return orders.filter((o) => {
       const orderDate = o.createdAt ? o.createdAt.slice(0, 10) : "";
       const deliveryDate = o.confirmedDeliveryDate || o.preferredDeliveryDate;
-      return deliveryDate === todayStr || (!deliveryDate && orderDate === todayStr);
+      return deliveryDate === todayStr || orderDate === todayStr;
     });
   }, [orders, todayStr]);
 
