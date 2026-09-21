@@ -45,6 +45,7 @@ export interface Settings {
   advancePercent: number;   // 0-10
   qrCodeUrl: string;        // dataURL or hosted URL
   tiers: PriceTier[];
+  dailyProductionCapacity?: number;
 }
 
 export interface Order {
@@ -74,6 +75,8 @@ export interface Order {
 const KEYS = {
   session: "Star_session",
   token: "Star_token",
+  ordersCache: "Star_orders_cache",
+  settingsCache: "Star_settings_cache",
 };
 
 const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8000/api";
@@ -87,7 +90,13 @@ const read = <T>(k: string, fallback: T): T => {
     return fallback;
   }
 };
-const write = (k: string, v: unknown) => localStorage.setItem(k, JSON.stringify(v));
+const write = (k: string, v: unknown) => {
+  try {
+    localStorage.setItem(k, JSON.stringify(v));
+  } catch {
+    // Quota fallback
+  }
+};
 
 const getToken = () => localStorage.getItem(KEYS.token);
 
@@ -100,6 +109,40 @@ const parseApiError = async (res: Response, fallback: string) => {
   }
   return fallback;
 };
+
+// ---------- Fast Client-side Caching ----------
+let memoryOrdersCache: Order[] | null = null;
+let memorySettingsCache: Settings | null = null;
+
+export function getCachedOrders(): Order[] | null {
+  if (memoryOrdersCache) return memoryOrdersCache;
+  const stored = read<Order[] | null>(KEYS.ordersCache, null);
+  if (stored && Array.isArray(stored) && stored.length > 0) {
+    memoryOrdersCache = stored;
+    return stored;
+  }
+  return null;
+}
+
+export function setCachedOrders(orders: Order[]) {
+  memoryOrdersCache = orders;
+  write(KEYS.ordersCache, orders);
+}
+
+export function getCachedSettings(): Settings | null {
+  if (memorySettingsCache) return memorySettingsCache;
+  const stored = read<Settings | null>(KEYS.settingsCache, null);
+  if (stored) {
+    memorySettingsCache = stored;
+    return stored;
+  }
+  return null;
+}
+
+export function setCachedSettings(settings: Settings) {
+  memorySettingsCache = settings;
+  write(KEYS.settingsCache, settings);
+}
 
 // =============================================================
 // AUTH
@@ -224,28 +267,35 @@ export async function getSettings(): Promise<Settings> {
   if (!res.ok) {
     throw new Error(await parseApiError(res, "Failed to load settings"));
   }
-  return res.json();
+  const data = (await res.json()) as Settings;
+  setCachedSettings(data);
+  return data;
 }
 
 export async function updateSettings(patch: Partial<Settings>): Promise<Settings> {
   const token = getToken();
   if (!token) throw new Error("You must be logged in as admin.");
 
-  const current = await getSettings();
+  const current = getCachedSettings() ?? (await getSettings());
+  const updatedData = { ...current, ...patch };
+  setCachedSettings(updatedData);
+
   const res = await fetch(`${API_URL}/settings`, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
-    body: JSON.stringify({ ...current, ...patch }),
+    body: JSON.stringify(updatedData),
   });
 
   if (!res.ok) {
     throw new Error(await parseApiError(res, "Failed to save settings"));
   }
 
-  return res.json();
+  const saved = (await res.json()) as Settings;
+  setCachedSettings(saved);
+  return saved;
 }
 
 export function getPriceForQuantity(qty: number, settings: Settings): number {
@@ -307,13 +357,16 @@ export async function getAllOrders(): Promise<Order[]> {
     headers: {
       Authorization: `Bearer ${token}`,
     },
+    signal: AbortSignal.timeout(15000),
   });
 
   if (!res.ok) {
     throw new Error(await parseApiError(res, "Failed to load orders"));
   }
 
-  return res.json();
+  const data = (await res.json()) as Order[];
+  setCachedOrders(data);
+  return data;
 }
 
 export async function updateOrder(
@@ -333,6 +386,15 @@ export async function updateOrder(
   const token = getToken();
   if (!token) throw new Error("You must be logged in as admin.");
 
+  // Optimistic cache update
+  const currentOrders = getCachedOrders();
+  if (currentOrders) {
+    const optimistic = currentOrders.map((o) =>
+      o.id === id ? { ...o, ...patch, updatedAt: new Date().toISOString() } : o
+    );
+    setCachedOrders(optimistic);
+  }
+
   const res = await fetch(`${API_URL}/orders/${id}`, {
     method: "PATCH",
     headers: {
@@ -346,7 +408,12 @@ export async function updateOrder(
     throw new Error(await parseApiError(res, "Failed to update order"));
   }
 
-  return res.json();
+  const updated = (await res.json()) as Order;
+  if (currentOrders) {
+    const synced = currentOrders.map((o) => (o.id === id ? updated : o));
+    setCachedOrders(synced);
+  }
+  return updated;
 }
 
 export interface ContactInquiry {

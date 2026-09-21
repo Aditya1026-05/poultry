@@ -18,6 +18,7 @@ import {
   ArrowUpDown,
   X,
   Mail,
+  Boxes,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import AppHeader from "@/components/AppHeader";
@@ -51,14 +52,32 @@ import {
   getContactInquiries,
   updateOrder,
   updateSettings,
+  getCachedOrders,
+  getCachedSettings,
 } from "@/lib/mockApi";
 import { toast } from "sonner";
 
+const DEFAULT_SETTINGS: Settings = {
+  unitPrice: 180,
+  advancePercent: 10,
+  qrCodeUrl: "",
+  tiers: [
+    { minQty: 1, maxQty: 19, pricePerTray: 190 },
+    { minQty: 20, maxQty: 99, pricePerTray: 180 },
+    { minQty: 100, maxQty: null, pricePerTray: 170 },
+  ],
+  dailyProductionCapacity: 800,
+};
+
 export default function Admin() {
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [settings, setSettings] = useState<Settings | null>(null);
+  const cachedOrders = getCachedOrders();
+  const cachedSettings = getCachedSettings();
+
+  const [orders, setOrders] = useState<Order[]>(() => cachedOrders ?? []);
+  const [settings, setSettings] = useState<Settings>(() => cachedSettings ?? DEFAULT_SETTINGS);
   const [inquiries, setInquiries] = useState<ContactInquiry[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [ordersLoading, setOrdersLoading] = useState(() => !cachedOrders || cachedOrders.length === 0);
+  const [isSyncing, setIsSyncing] = useState(false);
   const [selected, setSelected] = useState<Order | null>(null);
   const [criticalAlerts, setCriticalAlerts] = useState<Alert[]>([]);
   const [showPopup, setShowPopup] = useState(false);
@@ -66,6 +85,7 @@ export default function Admin() {
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<string>("date_desc");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [loadError, setLoadError] = useState<string | null>(null);
   const navigate = useNavigate();
 
   const filteredAndSortedOrders = useMemo(() => {
@@ -129,33 +149,46 @@ export default function Admin() {
     }
   };
 
+  const refresh = async (forceFullSpinner = false) => {
+    if (forceFullSpinner || orders.length === 0) {
+      setOrdersLoading(true);
+    } else {
+      setIsSyncing(true);
+    }
+    setLoadError(null);
+    try {
+      // 1. Fetch settings & inquiries
+      const [s, inq] = await Promise.all([
+        getSettings().catch((err) => {
+          console.warn("Could not load backend settings, using defaults:", err);
+          return getCachedSettings() ?? DEFAULT_SETTINGS;
+        }),
+        getContactInquiries().catch((err) => {
+          console.warn("Could not load inquiries:", err);
+          return [];
+        }),
+      ]);
+      setSettings(s);
+      setInquiries(inq);
 
-  const refresh = async () => {
-    const [o, s, inq] = await Promise.all([
-      getAllOrders(),
-      getSettings(),
-      getContactInquiries(),
-    ]);
-    setOrders(o);
-    setSettings(s);
-    setInquiries(inq);
-    setLoading(false);
+      // 2. Fetch orders from backend
+      const freshOrders = await getAllOrders();
+      setOrders(freshOrders);
+    } catch (err) {
+      console.error("Failed to load admin dashboard orders:", err);
+      if (orders.length === 0) {
+        setLoadError(err instanceof Error ? err.message : "Failed to load orders");
+      }
+    } finally {
+      setOrdersLoading(false);
+      setIsSyncing(false);
+    }
   };
 
   useEffect(() => {
     refresh();
     checkCriticalAlerts();
   }, []);
-
-
-  if (loading || !settings) {
-    return (
-      <div className="min-h-screen">
-        <AppHeader />
-        <div className="container py-20 text-center text-muted-foreground">Loading…</div>
-      </div>
-    );
-  }
 
   const stats = {
     pending: orders.filter((o) => o.status === "pending_payment_review").length,
@@ -166,16 +199,110 @@ export default function Admin() {
       .reduce((s, o) => s + o.totalAmount, 0),
   };
 
+  // Today's date in Indian Standard Time (IST) YYYY-MM-DD
+  const todayStr = useMemo(() => {
+    return new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Kolkata" }).format(new Date());
+  }, []);
+
+  const dailyCapacity = settings.dailyProductionCapacity ?? 800;
+
+  // Orders affecting today's inventory (scheduled delivery today or created today)
+  const todaysOrders = useMemo(() => {
+    return orders.filter((o) => {
+      const orderDate = o.createdAt ? o.createdAt.slice(0, 10) : "";
+      const deliveryDate = o.confirmedDeliveryDate || o.preferredDeliveryDate;
+      return deliveryDate === todayStr || (!deliveryDate && orderDate === todayStr);
+    });
+  }, [orders, todayStr]);
+
+  // Trays committed (confirmed, delivered, or completed) from today's batch
+  const confirmedTraysToday = useMemo(() => {
+    return todaysOrders
+      .filter((o) => o.status === "confirmed" || o.status === "delivered" || o.status === "completed")
+      .reduce((sum, o) => sum + o.quantity, 0);
+  }, [todaysOrders]);
+
+  // Trays in pending review queue waiting for confirmation
+  const pendingReviewTraysToday = useMemo(() => {
+    return todaysOrders
+      .filter((o) => o.status === "pending_payment_review")
+      .reduce((sum, o) => sum + o.quantity, 0);
+  }, [todaysOrders]);
+
+  // Available stock remaining for today (automatically decrements as orders are confirmed)
+  const availableStockToday = Math.max(0, dailyCapacity - confirmedTraysToday);
+  const stockAllocatedPercent = Math.min(100, Math.round((confirmedTraysToday / dailyCapacity) * 100));
+
   return (
     <div className="min-h-screen">
       <AppHeader />
       <main className="container py-10 md:py-16">
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-          <div className="mb-10">
+          <div className="mb-8">
             <h1 className="font-display text-4xl md:text-5xl tracking-tight mb-2">
               Admin <span className="text-gradient-gold">Dashboard</span>
             </h1>
-            <p className="text-muted-foreground">Manage orders, prices, and payments</p>
+            <p className="text-muted-foreground">Manage orders, prices, stock, and payments</p>
+          </div>
+
+          {/* Today's Live Production & Stock Monitor */}
+          <div className="glass-strong rounded-3xl p-5 md:p-6 mb-6 border border-primary/20 relative overflow-hidden">
+            <div className="absolute -right-16 -top-16 w-48 h-48 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-4">
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="relative flex h-2.5 w-2.5">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                  </span>
+                  <span className="text-xs uppercase tracking-wider font-semibold text-primary">Daily Production & Live Stock</span>
+                  <span className="text-xs text-muted-foreground">• Today ({todayStr})</span>
+                </div>
+                <h2 className="text-xl md:text-2xl font-display font-semibold flex items-center gap-2 flex-wrap">
+                  <span>Pending / Available Stock:</span>
+                  <span className={`font-mono text-3xl font-bold ${availableStockToday > 100 ? "text-emerald-400" : availableStockToday > 0 ? "text-amber-400" : "text-rose-400"}`}>
+                    {availableStockToday.toLocaleString("en-IN")}
+                  </span>
+                  <span className="text-sm font-normal text-muted-foreground">/ {dailyCapacity} trays remaining</span>
+                </h2>
+              </div>
+
+              <div className="flex items-center gap-3 flex-wrap">
+                <div className="bg-background/50 border border-border/50 rounded-2xl px-4 py-2 text-right">
+                  <div className="text-[11px] text-muted-foreground uppercase font-medium">Booked / Dispatched</div>
+                  <div className="text-lg font-display font-bold text-foreground">
+                    {confirmedTraysToday} <span className="text-xs font-normal text-muted-foreground">trays ({stockAllocatedPercent}%)</span>
+                  </div>
+                </div>
+                {pendingReviewTraysToday > 0 && (
+                  <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-2xl px-4 py-2 text-right">
+                    <div className="text-[11px] text-yellow-400 uppercase font-medium flex items-center justify-end gap-1">
+                      <Clock className="w-3 h-3" /> In Review Queue
+                    </div>
+                    <div className="text-lg font-display font-bold text-yellow-300">
+                      {pendingReviewTraysToday} <span className="text-xs font-normal text-yellow-400/80">trays</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Visual allocation progress bar */}
+            <div className="space-y-1.5">
+              <div className="h-3 w-full bg-secondary/60 rounded-full overflow-hidden p-0.5 flex">
+                <div 
+                  className="h-full bg-gradient-to-r from-amber-500 via-primary to-emerald-500 rounded-full transition-all duration-500"
+                  style={{ width: `${stockAllocatedPercent}%` }}
+                />
+              </div>
+              <div className="flex justify-between text-[11px] text-muted-foreground">
+                <span>0 Trays (Morning Batch)</span>
+                <span className="text-primary font-medium">
+                  {availableStockToday === 0 ? "Daily Batch Fully Allocated" : `${availableStockToday} trays ready for confirmation`}
+                </span>
+                <span>{dailyCapacity} Trays (Daily Target)</span>
+              </div>
+            </div>
           </div>
 
           {/* stat cards */}
@@ -188,9 +315,16 @@ export default function Admin() {
 
           <Tabs defaultValue="orders" className="w-full">
             <TabsList className="mb-6">
-              <TabsTrigger value="orders">
-                Orders ({filteredAndSortedOrders.length}
-                {filteredAndSortedOrders.length !== orders.length ? ` of ${orders.length}` : ""})
+              <TabsTrigger value="orders" className="flex items-center gap-1.5">
+                <span>
+                  Orders ({filteredAndSortedOrders.length}
+                  {filteredAndSortedOrders.length !== orders.length ? ` of ${orders.length}` : ""})
+                </span>
+                {isSyncing && (
+                  <span className="inline-flex items-center" title="Checking server for new orders...">
+                    <Loader2 className="w-3 h-3 animate-spin text-accent" />
+                  </span>
+                )}
               </TabsTrigger>
               <TabsTrigger value="inquiries">
                 <Mail className="w-4 h-4 mr-1.5" /> Inquiries ({inquiries.length})
@@ -201,7 +335,19 @@ export default function Admin() {
             </TabsList>
 
             <TabsContent value="orders">
-              {orders.length === 0 ? (
+              {ordersLoading && orders.length === 0 ? (
+                <div className="glass-strong rounded-3xl p-16 text-center text-muted-foreground flex flex-col items-center justify-center gap-3">
+                  <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                  <p className="text-sm">Loading live orders…</p>
+                </div>
+              ) : loadError && orders.length === 0 ? (
+                <div className="glass-strong rounded-3xl p-12 text-center max-w-md mx-auto space-y-3">
+                  <AlertTriangle className="w-10 h-10 text-amber-400 mx-auto" />
+                  <h3 className="font-display text-lg">Unable to load orders</h3>
+                  <p className="text-xs text-muted-foreground">{loadError}</p>
+                  <Button size="sm" variant="outline" onClick={refresh}>Retry Orders</Button>
+                </div>
+              ) : orders.length === 0 ? (
                 <div className="glass-strong rounded-3xl p-12 text-center">
                   <Package className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
                   <p className="text-muted-foreground">No orders yet.</p>
@@ -841,18 +987,33 @@ const SettingsPanel = ({
           <Upload className="w-4 h-4 mr-2" /> Upload QR
         </Button>
 
-        <div className="border-t border-border/40 pt-4">
-          <Label className="text-sm">Advance payment %</Label>
-          <Input
-            type="number"
-            min={0}
-            max={100}
-            value={form.advancePercent}
-            onChange={(e) => setForm({ ...form, advancePercent: parseInt(e.target.value) || 0 })}
-          />
-          <p className="text-xs text-muted-foreground mt-1">
-            % of total amount the customer pays online upfront. Default 10%.
-          </p>
+        <div className="border-t border-border/40 pt-4 space-y-4">
+          <div>
+            <Label className="text-sm">Advance payment %</Label>
+            <Input
+              type="number"
+              min={0}
+              max={100}
+              value={form.advancePercent}
+              onChange={(e) => setForm({ ...form, advancePercent: parseInt(e.target.value) || 0 })}
+            />
+            <p className="text-xs text-muted-foreground mt-1">
+              % of total amount the customer pays online upfront. Default 10%.
+            </p>
+          </div>
+
+          <div>
+            <Label className="text-sm">Daily Production Capacity (Trays)</Label>
+            <Input
+              type="number"
+              min={1}
+              value={form.dailyProductionCapacity ?? 800}
+              onChange={(e) => setForm({ ...form, dailyProductionCapacity: parseInt(e.target.value) || 800 })}
+            />
+            <p className="text-xs text-muted-foreground mt-1">
+              Standard daily production capacity (default 800 trays). Powers real-time inventory and pending stock tracking.
+            </p>
+          </div>
         </div>
       </div>
 

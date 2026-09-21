@@ -10,6 +10,7 @@ DEFAULT_SETTINGS = {
     "unitPrice": 180,
     "advancePercent": 10,
     "qrCodeUrl": "",
+    "dailyProductionCapacity": 800,
     "tiers": [
         {"minQty": 1, "maxQty": 10, "pricePerTray": 180},
         {"minQty": 11, "maxQty": 50, "pricePerTray": 165},
@@ -33,6 +34,7 @@ def clean_settings(settings: dict) -> dict:
         "unitPrice": settings["unitPrice"],
         "advancePercent": settings["advancePercent"],
         "qrCodeUrl": settings.get("qrCodeUrl", ""),
+        "dailyProductionCapacity": settings.get("dailyProductionCapacity", 800),
         "tiers": settings["tiers"],
     }
 

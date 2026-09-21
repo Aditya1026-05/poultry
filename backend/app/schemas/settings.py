@@ -12,3 +12,4 @@ class SettingsResponse(BaseModel):
     advancePercent: int = Field(ge=0, le=100)
     qrCodeUrl: str
     tiers: list[PriceTier]
+    dailyProductionCapacity: int = Field(default=800, ge=1)

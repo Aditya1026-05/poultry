@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 from app.database import alerts_collection
 from app.schemas.alerts import AlertResponse, UnreadCountResponse
 from app.security import require_admin
@@ -28,10 +28,8 @@ def clean_alert(alert: dict) -> dict:
 @router.get("", response_model=list[AlertResponse])
 async def get_alerts(_admin=Depends(require_admin)):
     """
-    Triggers alert generation and returns all alerts sorted with newest first.
+    Returns all alerts sorted with newest first.
     """
-    # Trigger alert generation to check for updates
-    await generate_alerts()
     cursor = alerts_collection.find({}).sort("createdAt", -1)
     return [clean_alert(alert) async for alert in cursor]
 
